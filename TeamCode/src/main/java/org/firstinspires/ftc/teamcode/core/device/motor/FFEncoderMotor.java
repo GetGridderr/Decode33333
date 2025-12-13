@@ -53,6 +53,8 @@ public class FFEncoderMotor extends Motor implements Encoder {
         pidController.setpoint = speed;
     }
 
+    public void setPoint(double point) { pidController.setpoint = point; }
+
     public void setAlpha(double alpha) {
         smoother.alpha = alpha;
     }
@@ -72,6 +74,17 @@ public class FFEncoderMotor extends Motor implements Encoder {
         FtcDashboard.getInstance().getTelemetry().addData("Power", power);
         FtcDashboard.getInstance().getTelemetry().addData("Speed err", pidController.setpoint - spd);
         FtcDashboard.getInstance().getTelemetry().addData("Speed err Smooth", pidController.setpoint - smoSpd);
+        FtcDashboard.getInstance().getTelemetry().update();
+        setPower(SensorVoltage.getInstance().calculateCoefficientVoltage(power));
+    }
+
+    public void positionTick() {
+        double pos = getEncoderPosition();
+        double pid_out = pidController.PIDGet(pos);
+        FtcDashboard.getInstance().getTelemetry().addData("PID out", pid_out);
+        double power = normalizePower(pid_out);
+        FtcDashboard.getInstance().getTelemetry().addData("Power", power);
+        FtcDashboard.getInstance().getTelemetry().addData("Position err", pidController.setpoint - pos);
         FtcDashboard.getInstance().getTelemetry().update();
         setPower(SensorVoltage.getInstance().calculateCoefficientVoltage(power));
     }

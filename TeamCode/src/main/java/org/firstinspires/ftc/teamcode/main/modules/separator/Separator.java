@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.core.device.motor.EncoderMotor;
+import org.firstinspires.ftc.teamcode.core.device.motor.FFEncoderMotor;
 import org.firstinspires.ftc.teamcode.core.device.servomotor.Servomotor;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
 import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
@@ -17,8 +18,8 @@ import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
 
 public class Separator implements Initializable {
     private static final Separator INSTANCE = new Separator();
-    private final Motor separatorMotor;
-    private final EncoderMotor separatorEncoder;
+//    private final Motor separatorMotor;
+    private final FFEncoderMotor separatorMotor;
     private final Servomotor servoToGun;
     private final ElapsedTime safeTime = new ElapsedTime();
     private int targetPosition = 0;
@@ -27,17 +28,15 @@ public class Separator implements Initializable {
     public static Separator getInstance() { return INSTANCE; }
 
     public Separator() {
-        separatorMotor = new Motor("motor_separator");
-        separatorEncoder = new EncoderMotor("motor_separator");
+        separatorMotor = new FFEncoderMotor("motor_separator");
         servoToGun = new Servomotor("servo_to_gun");
     }
 
     @Override
     public void initialize(HardwareMap hardwareMap) {
         separatorMotor.initialize(hardwareMap);
+        separatorMotor.resetEncoder();
         servoToGun.initialize(hardwareMap);
-        separatorEncoder.initialize(hardwareMap);
-        separatorEncoder.resetEncoder();
     }
 
     @Override
@@ -60,46 +59,28 @@ public class Separator implements Initializable {
                 break;
         }
         if (oldPosition < targetPosition) {
-            while (separatorEncoder.getEncoderPosition() < targetPosition) {
-                startSeparator(-separatorConfig.velocitySeparator);
-                boolean isSafe = separatorMotor.getCurrent(CurrentUnit.AMPS)>3.0;
-                if(!isSafe){
-
-                    safeTime.reset();
-                    while (safeTime.milliseconds() <= 300){
-                        startSeparator(separatorConfig.velocitySeparator /
-                                Math.abs(separatorConfig.velocitySeparator) * 0.3);
-                    }
-                }
+            if (separatorMotor.getEncoderPosition() < targetPosition) {
+                startSeparator(-targetPosition);
             }
             oldPosition = targetPosition;
             separatorMotor.setPower(0);
             separatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         else {
-            while (separatorEncoder.getEncoderPosition() > targetPosition) {
-                startSeparator(separatorConfig.velocitySeparator);
-                boolean isSafe = separatorMotor.getCurrent(CurrentUnit.AMPS)>3.0;
-                if(!isSafe){
-
-                    safeTime.reset();
-                    while (safeTime.milliseconds() <= 300){
-                        startSeparator(separatorConfig.velocitySeparator /
-                                Math.abs(separatorConfig.velocitySeparator) * 0.3);
-                    }
-                }
+            if (separatorMotor.getEncoderPosition() > targetPosition) {
+                startSeparator(targetPosition);
             }
             oldPosition = targetPosition;
             separatorMotor.setPower(0);
             separatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-
-
     }
 
-    public void startSeparator(double vel) {
-        separatorMotor.setPower(vel);
+    public void startSeparator(double position) {
+        separatorMotor.setPIDCoefficients(separatorConfig.separatorPid);
+        separatorMotor.setPoint(position);  // sensorVoltage.calculateCoefficientVoltage(velocity)
+        separatorMotor.speedTick();
     }
 
     public void test() {
@@ -115,6 +96,6 @@ public class Separator implements Initializable {
 
     }
 
-    public int getEncoderPos() { return separatorEncoder.getEncoderPosition(); }
+    public int getEncoderPos() { return separatorMotor.getEncoderPosition(); }
 
 }

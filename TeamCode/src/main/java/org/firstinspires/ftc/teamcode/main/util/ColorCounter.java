@@ -2,8 +2,7 @@ package org.firstinspires.ftc.teamcode.main.util;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.core.device.sensor.SensorColor;
-import org.firstinspires.ftc.teamcode.main.modules.transfer.Brush;
+import org.firstinspires.ftc.teamcode.core.device.sensor.color.SensorColor;
 
 public class ColorCounter {
     private SensorColor leftSensor;

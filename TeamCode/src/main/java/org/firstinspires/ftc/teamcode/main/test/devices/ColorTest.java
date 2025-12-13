@@ -2,10 +2,11 @@ package org.firstinspires.ftc.teamcode.main.test.devices;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.adafruit.AdafruitI2cColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.core.device.sensor.SensorColor;
+import org.firstinspires.ftc.teamcode.core.device.sensor.color.SensorColor;
 
 @TeleOp(name="ColorTest", group="Test")
 @Config
@@ -14,7 +15,9 @@ public class ColorTest extends OpMode {
     public static String colorName = "color_sensor_right";
     @Override
     public void init() {
-        sensorColor = new SensorColor(colorName);
+        AdafruitI2cColorSensor hfColor =
+                hardwareMap.get(AdafruitI2cColorSensor.class, colorName);
+        sensorColor = new SensorColor(colorName, hfColor);
         sensorColor.initialize(hardwareMap);
     }
 
