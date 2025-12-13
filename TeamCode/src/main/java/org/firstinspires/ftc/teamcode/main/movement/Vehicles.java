@@ -5,21 +5,21 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
-import org.firstinspires.ftc.teamcode.core.device.odometer.Odometer;
-import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
+import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 
 
 public final class Vehicles implements Initializable {
     private static final Vehicles INSTANCE = new Vehicles();
 
-    private final Odometer odometerX;
-    private final Odometer odometerY;
+    private OdometerPinpoint pinpoint;
+
     private final Motor leftFrontMotor;
     private final Motor rightFrontMotor;
     private final Motor leftBackMotor;
     private final Motor rightBackMotor;
+    private final Motor separatorMotor;
 
     private final PIDRegulator xPosPID = new PIDRegulator(1, 1, 1);
     private final PIDRegulator yPosPID = new PIDRegulator(1, 1, 1);
@@ -27,12 +27,12 @@ public final class Vehicles implements Initializable {
 
 
     private Vehicles() {
-        leftFrontMotor = new Motor("left_front_vehicle_motor");
-        rightFrontMotor = new Motor("right_front_vehicle_motor");
+        leftFrontMotor= new Motor("left_front_vehicle_motor");
+        rightFrontMotor= new Motor("right_front_vehicle_motor"); //
         leftBackMotor = new Motor("left_back_vehicle_motor");
         rightBackMotor = new Motor("right_back_vehicle_motor");
-        odometerX = new Odometer("OdometerX");
-        odometerY = new Odometer("right_back_vehicle_motor");
+        separatorMotor = new Motor("motor_separator");
+        pinpoint = new OdometerPinpoint("pinpoint");
     }
 
     public static Vehicles getInstance() {
@@ -45,8 +45,8 @@ public final class Vehicles implements Initializable {
         leftBackMotor.initialize(hardwareMap);
         rightFrontMotor.initialize(hardwareMap);
         rightBackMotor.initialize(hardwareMap);
-        odometerX.initialize(hardwareMap);
-        odometerY.initialize(hardwareMap);
+        separatorMotor.initialize(hardwareMap);
+        pinpoint.initialize(hardwareMap);
 
         /*
          * Motor by default rotates clockwise
@@ -54,10 +54,11 @@ public final class Vehicles implements Initializable {
          * motors will rotate backward.
          * We should change their direction.
          */
-        leftBackMotor.invertDirection();
-        leftFrontMotor.invertDirection();
-        odometerX.resetEncoder();
-        odometerY.resetEncoder();
+//        leftBackMotor.invertDirection();
+//        leftFrontMotor.invertDirection();
+        rightFrontMotor.invertDirection();
+//        odometerX.resetEncoder();
+//        odometerY.resetEncoder();
     }
 
     @Override
@@ -66,8 +67,8 @@ public final class Vehicles implements Initializable {
                 && rightFrontMotor.isInitialized()
                 && leftBackMotor.isInitialized()
                 && rightBackMotor.isInitialized()
-                && odometerX.isInitialized()
-                && odometerY.isInitialized();
+                && pinpoint.isInitialized()
+                && separatorMotor.isInitialized();
     }
 
     public void stopAll() {
@@ -118,7 +119,6 @@ public final class Vehicles implements Initializable {
         leftBackMotor.setPower(Motor.normalizePower(backLeftPower));
         rightFrontMotor.setPower(Motor.normalizePower(frontRightPower));
         rightBackMotor.setPower(Motor.normalizePower(backRightPower));
-
         return true;
     }
 
@@ -132,9 +132,9 @@ public final class Vehicles implements Initializable {
         double xSpd = 0, ySpd = 0, yawSpd = 0;
 
         if(posReg) {
-            double xErr = x - Odometry.getInstance().getX();
-            double yErr = y - Odometry.getInstance().getY();
-            double[] errVector = Odometry.rotateVector(xErr, yErr, -Odometry.getInstance().getYaw());
+            double xErr = x - pinpoint.getX();
+            double yErr = y - pinpoint.getY();
+            double[] errVector = Odometry.rotateVector(xErr, yErr, -OdometerPinpoint.getInstance().getYaw());
             xErr = errVector[0];
             yErr = errVector[1];
             xSpd = xPosPID.PIDGet(-xErr);
@@ -142,11 +142,10 @@ public final class Vehicles implements Initializable {
         }
 
         if(yawReg) {
-            double yawErr = Gyro.getShortestPathToAngle(Odometry.getInstance().getYaw(), yaw);
+            double yawErr = OdometerPinpoint.getInstance().getShortestPathToAngle(Odometry.getInstance().getYaw(), yaw);
             yawSpd = yawPosPID.PIDGet(-yawErr);
         }
-
-        return moveToDirection(ySpd, xSpd, yawSpd, true);
+        return moveToDirection(ySpd * 0.5, xSpd * 0.5, yawSpd * 0.5, true);
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -173,10 +172,12 @@ public final class Vehicles implements Initializable {
     }
 
     public double getPositionOdometerX() {
-        return odometerX.getEncoderPosition();
+        return OdometerPinpoint.getInstance().getX();
     }
 
     public double getPositionOdometerY() {
-        return odometerY.getEncoderPosition();
+        return OdometerPinpoint.getInstance().getY();
     }
+
+    public double getGyroYaw() { return OdometerPinpoint.getInstance().getYaw(); }
 }

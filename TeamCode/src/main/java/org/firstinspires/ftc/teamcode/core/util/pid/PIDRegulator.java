@@ -10,6 +10,12 @@ public class PIDRegulator {
     private double integral_err = 0;
     private double old_err = 0;
 
+    public PIDRegulator(PIDCoefficients pidCoefficients) {
+        this.KP = pidCoefficients.getKP();
+        this.KI = pidCoefficients.getKI();
+        this.KD = pidCoefficients.getKD();
+    }
+
     public PIDRegulator(double KP, double KI, double KD) {
         this.KP = KP;
         this.KI = KI;
@@ -26,6 +32,12 @@ public class PIDRegulator {
         this.KP = KP;
         this.KI = KI;
         this.KD = KD;
+    }
+
+    public void setCoefficients(PIDCoefficients pidCoefficients) {
+        this.KP = pidCoefficients.getKP();
+        this.KI = pidCoefficients.getKI();
+        this.KD = pidCoefficients.getKD();
     }
 
     public double PIDGet(double input, double setpoint){

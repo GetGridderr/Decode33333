@@ -1,52 +1,63 @@
 package org.firstinspires.ftc.teamcode.main.opencv;
 
+import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.cameraConfig;
+
 import android.util.Size;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
-import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
-import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
 
 import java.util.List;
 
-// coding by Matvey Ivanovv
-
 public class AprilTag implements Initializable {
 
-    private static final org.firstinspires.ftc.teamcode.main.opencv.AprilTag INSTANCE = new org.firstinspires.ftc.teamcode.main.opencv.AprilTag();
+    private static final AprilTag INSTANCE = new AprilTag();
     private static final boolean USE_WEBCAM = true;
-    public ElapsedTime runtime = new ElapsedTime();
-
     private AprilTagProcessor aprilTag;
     public VisionPortal visionPortal;
-    private GunControl gun;
-    private TransferBall transfer;
     private double posAprilX = 0;
     private double posAprilY = 0;
     private double posAprilZ = 0;
     private double id = 0;
 
     private double bearing;
-
     private double yaw;
-
     private double range;
 
     private boolean isInitialized = false;
 
     @Override
     public void initialize(HardwareMap hardwareMap) {
+        Position cameraPosition = new Position(
+                DistanceUnit.CM,
+                cameraConfig.x,
+                cameraConfig.y,
+                cameraConfig.z,
+                0
+        );
+
+        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(
+                AngleUnit.DEGREES,
+                cameraConfig.yaw,
+                cameraConfig.pitch,
+                cameraConfig.roll,
+                0
+        );
         aprilTag = new AprilTagProcessor.Builder()
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
                 .setDrawTagOutline(true)
+                .setCameraPose(cameraPosition, cameraOrientation)
                 .build();
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
@@ -57,12 +68,11 @@ public class AprilTag implements Initializable {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
 
-        builder.setCameraResolution(new Size(640, 480));
+        builder.setCameraResolution(new Size(640, 360));
         builder.enableLiveView(true);
         builder.addProcessor(aprilTag);
 
         visionPortal = builder.build();
-
     }
 
     @Override
@@ -92,6 +102,7 @@ public class AprilTag implements Initializable {
 
     public double getYaw() { return yaw; }
 
+
     public void resetApril() {
         posAprilX = 0;
         posAprilZ = 0;
@@ -99,29 +110,24 @@ public class AprilTag implements Initializable {
         id = 0;
     }
 
-    public void telemetryAprilTag() {
+    public void updateAprilTagData() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        FtcDashboard.getInstance().getTelemetry().addData("# AprilTags Detected", currentDetections.size());
-        posAprilY = 0;
-        posAprilX = 0;
-        posAprilZ = 0;
-
+        FtcDashboard.getInstance().getTelemetry().addData("AprilTags Detected", currentDetections.size());
+        resetApril();
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-                posAprilY = detection.ftcPose.y;
+
                 posAprilX = detection.ftcPose.x;
+                posAprilY = detection.ftcPose.y;
                 posAprilZ = detection.ftcPose.z;
                 id = detection.id;
                 bearing = detection.ftcPose.bearing;
                 range = detection.ftcPose.range;
-                yaw = detection.ftcPose.yaw;
+
                 FtcDashboard.getInstance().getTelemetry().addData("ID", detection.id);
-                FtcDashboard.getInstance().getTelemetry().addLine(String.format("XYZ", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-            } else {
-                FtcDashboard.getInstance().getTelemetry().addData("ID", detection.id);
-                FtcDashboard.getInstance().getTelemetry().addLine(String.format("Center", detection.center.x, detection.center.y));
+                FtcDashboard.getInstance().getTelemetry().addLine(String.format("XYZ %.2f %.2f %.2f", posAprilX, posAprilY, posAprilZ));
+                FtcDashboard.getInstance().getTelemetry().addData("Yaw", detection.ftcPose.yaw);
             }
         }
     }
-
 }

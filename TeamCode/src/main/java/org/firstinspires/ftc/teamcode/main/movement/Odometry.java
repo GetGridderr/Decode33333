@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.main.movement;
 import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
+
+import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
 
 
@@ -9,8 +11,6 @@ import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
 @Config
 public final class Odometry {
     private static final Odometry instance = new Odometry();
-
-    private final Gyro gyro = Gyro.getInstance();
     public double ticksX, ticksY, yaw;
     private double oldXOd, oldYOd;
     public static double ticksPerCm = 514;
@@ -55,7 +55,7 @@ public final class Odometry {
 
     public void odometryTick() {
         if(!started) {
-            yaw = gyro.getYaw();
+            yaw = OdometerPinpoint.getInstance().getYaw();
             oldXOd = Vehicles.getInstance().getPositionOdometerX();
             oldYOd = Vehicles.getInstance().getPositionOdometerY();
             started = true;
@@ -63,7 +63,7 @@ public final class Odometry {
         }
         double newTicksX = Vehicles.getInstance().getPositionOdometerX();
         double newTicksY = Vehicles.getInstance().getPositionOdometerY();
-        double newYaw = gyro.getYaw();
+        double newYaw = OdometerPinpoint.getInstance().getYaw();
 
         dX = newTicksX - oldXOd;
         dY = newTicksY - oldYOd;

@@ -12,9 +12,9 @@ import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
 import org.firstinspires.ftc.teamcode.main.movement.Vehicles;
 import org.firstinspires.ftc.teamcode.main.opencv.AprilTag;
 
-@Autonomous(name="AutonomusRedTower", group="Dev")
+@Autonomous(name="AutonomusBlue", group="Dev")
 @Config
-public class AutonomusRed extends LinearOpMode {
+public class AutonomusBlue extends LinearOpMode {
 
     public ElapsedTime runtime = new ElapsedTime();
     public AprilTag aprilTag;
@@ -56,13 +56,13 @@ public class AutonomusRed extends LinearOpMode {
                 FtcDashboard.getInstance().getTelemetry().addData("OpMode start", AprilTag.getInstance().getPosAprilY());
                 FtcDashboard.getInstance().getTelemetry().update();
                 runtime.reset();
-                while (runtime.milliseconds() < 500 && opModeIsActive()) { FtcDashboard.getInstance().getTelemetry().addData("Time", runtime.milliseconds()); }
+                while (runtime.milliseconds() < 500) { FtcDashboard.getInstance().getTelemetry().addData("Time", runtime.milliseconds()); }
                 if (opModeIsActive()) {
-                    while (opModeIsActive() && AprilTag.getInstance().getId() != 24 && AprilTag.getInstance().getPosAprilY() < 33) {
-                        AprilTag.getInstance().telemetryAprilTag();
+                    while (opModeIsActive() && AprilTag.getInstance().getId() != 20 && AprilTag.getInstance().getPosAprilY() < 30) {
+                        AprilTag.getInstance().updateAprilTagData();
                         GunControl.getInstance().startShot();
                         calculateRegulatorTag(-0.4, 41.7, 4.5, -2.5);
-                        Vehicles.getInstance().moveToDirection(-0.2, 0.0, 0);
+                        Vehicles.getInstance().moveToDirection(-0.2, -0.2, 0);
                         FtcDashboard.getInstance().getTelemetry().addData("Is target position", isInTargetPosition(30));
                         FtcDashboard.getInstance().getTelemetry().update();
                     }
@@ -70,7 +70,7 @@ public class AutonomusRed extends LinearOpMode {
                 FtcDashboard.getInstance().getTelemetry().addData("To position", true);
                 FtcDashboard.getInstance().getTelemetry().addData("AprilY", AprilTag.getInstance().getPosAprilY());
                 FtcDashboard.getInstance().getTelemetry().update();
-                Vehicles.getInstance().moveToDirection(0.0, 0.0, 0.0);
+                Vehicles.getInstance().moveToDirection(-0.3, 0.0, 0.0);
 
                 while (AprilTag.getInstance().getPosAprilY() >= 30 && opModeIsActive() && countBall < 2) {
                     GunControl.getInstance().startShot();
@@ -78,7 +78,7 @@ public class AutonomusRed extends LinearOpMode {
 
                     if (GunControl.getInstance().getSpeedGun() < -860) {
                         runtime.reset();
-                        while (runtime.milliseconds() < 1200) {
+                        while (opModeIsActive() && runtime.milliseconds() < 800) {
                             GunControl.getInstance().setVelocity(-900);
                             GunControl.getInstance().startShot();
                             TransferBall.getInstance().startFlow();
@@ -87,10 +87,6 @@ public class AutonomusRed extends LinearOpMode {
                         FtcDashboard.getInstance().getTelemetry().addData("GunSpeed", GunControl.getInstance().getSpeedGun());
                         FtcDashboard.getInstance().getTelemetry().addData("Count Ball", countBall);
                         FtcDashboard.getInstance().getTelemetry().update();
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-                        Vehicles.getInstance().moveToDirection(0.0, 0.0, 0.0);
                     }
                 }
 
@@ -102,15 +98,14 @@ public class AutonomusRed extends LinearOpMode {
             }
             GunControl.getInstance().stopShot();
             TransferBall.getInstance().setDegreeServo(0.5);
-            runtime.reset();
-            while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-                Vehicles.getInstance().moveToDirection(0.0, 0.3, 0.0);
+            while (runtime.milliseconds() < 2000) {
+                Vehicles.getInstance().moveToDirection(0.0, -0.3, 0.0);
             }
             Vehicles.getInstance().moveToDirection(0.0, 0.0, 0.0);
             AprilTag.getInstance().visionPortal.close();
         }
         GunControl.getInstance().stopShot();
-        GunControl.getInstance().setVelocity(-1100);
+        GunControl.getInstance().setVelocity(-1000);
         Vehicles.getInstance().moveToDirection(0.0, 0.0, 0.0);
         AprilTag.getInstance().visionPortal.close();
     }

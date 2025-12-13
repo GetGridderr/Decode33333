@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.core.util.pid;
 
 
-import org.firstinspires.ftc.teamcode.core.util.Constants;
-
-
 public final class PIDController {
     private PIDCoefficients coefficients;
 
@@ -16,6 +13,14 @@ public final class PIDController {
 
     private double lastNanoTimeStamp;
 
+
+    public PIDController(PIDCoefficients pidCoefficients) {
+        setCoefficients(pidCoefficients);
+        setTarget(0);
+        lastError = 0;
+        integral = 0;
+        lastNanoTimeStamp = System.nanoTime();
+    }
 
     public PIDController(double kP, double kI, double kD, double integralLimit) {
         setCoefficients(kP, kI, kD);
@@ -81,7 +86,7 @@ public final class PIDController {
 
         final double currentNanoTimeStamp = System.nanoTime();
         final double dT =
-                (currentNanoTimeStamp - lastNanoTimeStamp) * Constants.SECONDS_IN_NANOSECOND;
+                (currentNanoTimeStamp - lastNanoTimeStamp) * 1.E-9;
         lastNanoTimeStamp = currentNanoTimeStamp;
 
         integral += error * coefficients.getKI() * dT;

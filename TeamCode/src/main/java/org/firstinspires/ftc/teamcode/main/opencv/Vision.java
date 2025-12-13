@@ -57,7 +57,7 @@ public class Vision implements Initializable {
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(640, 360, OpenCvCameraRotation.SIDEWAYS_RIGHT);
             }
 
             @Override
@@ -117,7 +117,7 @@ class PipeLine extends OpenCvPipeline {
         MatOfPoint largestPurpleContour = findLargestContour(maskPurple);
         double purpleArea = (largestPurpleContour != null) ? Imgproc.contourArea(largestPurpleContour) : 0;
         largestObjectType = "Purple";
-        processLargestObject(input, largestPurpleContour, new Scalar(255, 0, 255));
+//        processLargestObject(input, largestPurpleContour, new Scalar(255, 0, 255));
         hsvMat.release();
         FtcDashboard.getInstance().getTelemetry().addData("Purple Large X", largestObjectCenterX);
         FtcDashboard.getInstance().getTelemetry().addData("Purple Large Y", largestObjectCenterY);
@@ -141,12 +141,12 @@ class PipeLine extends OpenCvPipeline {
         }
         return largestContour;
     }
-    private void processLargestObject(Mat input, MatOfPoint contour, Scalar color) {
-        Imgproc.drawContours(input, java.util.Arrays.asList(contour), -1, color, 3);
-        Rect boundingBox = Imgproc.boundingRect(contour);
-        largestObjectCenterX = boundingBox.x + boundingBox.width / 2.0;
-        largestObjectCenterY = boundingBox.y + boundingBox.height / 2.0;
-    }
+//    private void processLargestObject(Mat input, MatOfPoint contour, Scalar color) {
+//        Imgproc.drawContours(input, java.util.Arrays.asList(contour), -1, color, 3);
+//        Rect boundingBox = Imgproc.boundingRect(contour);
+//        largestObjectCenterX = boundingBox.x + boundingBox.width / 2.0;
+//        largestObjectCenterY = boundingBox.y + boundingBox.height / 2.0;
+//    }
 
     @Override
     public void onViewportTapped()

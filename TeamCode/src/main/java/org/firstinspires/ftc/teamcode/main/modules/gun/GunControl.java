@@ -1,33 +1,23 @@
 package org.firstinspires.ftc.teamcode.main.modules.gun;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.gunConfig;
 
 import org.firstinspires.ftc.teamcode.core.device.motor.FFEncoderMotor;
 import org.firstinspires.ftc.teamcode.core.device.servomotor.Servomotor;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage;
+import org.firstinspires.ftc.teamcode.main.opencv.AprilTag;
 
 // coding by Matvey Ivanovv
 
-@Config
 public final class GunControl implements Initializable {
     private static final GunControl INSTANCE = new GunControl();
-    public ElapsedTime runtime = new ElapsedTime();
     private final FFEncoderMotor motorLeft;
     private final Servomotor servo;
-    public static double velocity = -1000;
-    public static double degreeTower = 0.35;
-
-    public static double p = 0.009;
-    public static double i = 0.0;
-    public static double d = 0.0;
-    public static double alpha = 1;
-    public static double spdMul = 0.00025;
 
     public GunControl() {
         motorLeft = new FFEncoderMotor("gun_motor_left");
@@ -48,19 +38,19 @@ public final class GunControl implements Initializable {
     public boolean isInitialized() { return motorLeft.isInitialized() && servo.isInitialized() && SensorVoltage.getInstance().isInitialized(); }
 
     public double getVelocity() {
-        return velocity;
+        return gunConfig.velocity;
     }
 
-    public void setVelocity(double velocityff) {
-        this.velocity = velocity;
+    public void setVelocity(double vel) {
+        gunConfig.velocity = vel;
     }
 
     public void startShot() {
         FtcDashboard.getInstance().getTelemetry().update();
-        motorLeft.setPIDCoefficients(p, i, d);
-        motorLeft.setAlpha(alpha);
-        motorLeft.setSpeedMul(spdMul);
-        motorLeft.setSpeed(velocity);  // sensorVoltage.calculateCoefficientVoltage(velocity)
+        motorLeft.setPIDCoefficients(gunConfig.gunPid);
+        motorLeft.setAlpha(gunConfig.alpha);
+        motorLeft.setSpeedMul(gunConfig.spdMul);
+        motorLeft.setSpeed(gunConfig.velocity);  // sensorVoltage.calculateCoefficientVoltage(velocity)
         motorLeft.speedTick();
         FtcDashboard.getInstance().getTelemetry().addData("Speed gun", GunControl.getInstance().getSpeedGun());
         FtcDashboard.getInstance().getTelemetry().update();
@@ -69,15 +59,32 @@ public final class GunControl implements Initializable {
     public void stopShot() { motorLeft.setPower(0); }
 
     public void setTowerDegree(double degree) {
-        degreeTower = degree;
+        gunConfig.degreeTower = degree;
         servo.setServoPosition(degree);
     }
+
 
     public double getSpeedGun() {
         return motorLeft.getEncoderSpeed();
     }
 
     public double getTowerDegree() {
-        return degreeTower;
+        return gunConfig.degreeTower;
+    }
+
+    public void aimToAprilTag() {
+        double bearing = AprilTag.getInstance().getBearing();
+        double servoPos = servo.getCurrentDegree();
+        
+
+        double kP = 0.005;
+
+        double correction = bearing * kP;
+
+        double newPosition = servoPos + correction;
+        newPosition = Math.max(0.0, Math.min(1.0, newPosition));
+
+
+        servo.setServoPosition(newPosition);
     }
 }

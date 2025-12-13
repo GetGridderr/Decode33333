@@ -173,6 +173,10 @@ public class Motor extends Device implements Directional {
         pidController.setCoefficients(kP, kI, kD);
     }
 
+    public void setPIDCoefficients(PIDCoefficients pidCoefficients) {
+        pidController.setCoefficients(pidCoefficients);
+    }
+
     public static double normalizePower(double power) {
         if (power < -1) return -1;
         if (power > 1) return 1;

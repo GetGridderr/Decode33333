@@ -92,13 +92,13 @@ public class Gyro implements Initializable {
         imu.resetYaw();
     }
 
-    public static double normalizeAngle(double angle) {
+    public double normalizeAngle(double angle) {
         while (angle > 180) angle -= 360;
         while (angle < -180) angle += 360;
         return angle;
     }
 
-    public static double getShortestPathToAngle(double currentAngle, double targetAngle) {
+    public double getShortestPathToAngle(double currentAngle, double targetAngle) {
         double difference = targetAngle - currentAngle;
         return normalizeAngle(difference);
     }

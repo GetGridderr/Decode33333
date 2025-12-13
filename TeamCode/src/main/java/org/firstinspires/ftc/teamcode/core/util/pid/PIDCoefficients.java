@@ -1,11 +1,8 @@
 package org.firstinspires.ftc.teamcode.core.util.pid;
 
 
-import com.acmerobotics.dashboard.config.Config;
 
-
-@Config
-public /* data */ class PIDCoefficients {
+public class PIDCoefficients {
     private double kP;
     private double kI;
     private double kD;

@@ -1,13 +1,16 @@
-package org.firstinspires.ftc.teamcode.main.opmodes;
+package org.firstinspires.ftc.teamcode.main.test.modules.movement;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
-import org.firstinspires.ftc.teamcode.main.movement.Odometry;
+//import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
+//import org.firstinspires.ftc.teamcode.core.telemetry.FieldView;
+//import org.firstinspires.ftc.teamcode.main.movement.Odometry;
 import org.firstinspires.ftc.teamcode.main.movement.Vehicles;
 import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
 import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
+import org.firstinspires.ftc.teamcode.main.opencv.AprilTag;
 import org.firstinspires.ftc.teamcode.main.opencv.Vision;
 
 // coding by Matvey Ivanovv
@@ -16,11 +19,14 @@ import org.firstinspires.ftc.teamcode.main.opencv.Vision;
     EDGE - ПОБЕДА!
  */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp", group="Dev")
-public class TeleOp extends OpMode
+@TeleOp(name="TeleOp", group="Dev")
+public class BasicMovement extends OpMode
 {
     // Declare OpMode members.
     private final ElapsedTime runtime = new ElapsedTime();
+    private GunControl gun;
+    private TransferBall transfer;
+    private Vision vision;
     public static double degreeGunTower = 0;
     public boolean stateFlow = false;
     private int countBall = 0;
@@ -34,14 +40,14 @@ public class TeleOp extends OpMode
         Vehicles.getInstance().initialize(hardwareMap);
         TransferBall.getInstance().initialize(hardwareMap);
         GunControl.getInstance().initialize(hardwareMap);
-        Gyro.getInstance().initialize(hardwareMap);
+//        Gyro.getInstance().initialize(hardwareMap);
+        AprilTag.getInstance().initialize(hardwareMap);
 //        Vision.getInstance().initialize(hardwareMap);
         if (Vehicles.getInstance().isInitialized() &&
                 TransferBall.getInstance().isInitialized() &&
                 GunControl.getInstance().isInitialized() &&
-                Vision.getInstance().isInitialized() &&
-                Gyro.getInstance().isInitialized())
-        { FtcDashboard.getInstance().getTelemetry().addData("Status", "Initialized"); }
+                Vision.getInstance().isInitialized())
+        { telemetry.addData("Status", "Initialized"); }
 //        Vision.getInstance().startStreaming();
     }
 
@@ -65,9 +71,10 @@ public class TeleOp extends OpMode
      */
     @Override
     public void loop() {
-        Odometry.getInstance().odometryTick();
-        FtcDashboard.getInstance().getTelemetry().addData("X Pos:", Odometry.getInstance().getX());
-        FtcDashboard.getInstance().getTelemetry().addData("Y Pos:", Odometry.getInstance().getY());
+//        Odometry.getInstance().odometryTick();
+//        AprilTag.getInstance().telemetryAprilTag();
+//        FtcDashboard.getInstance().getTelemetry().addData("X Pos:", Odometry.getInstance().getX());
+//        FtcDashboard.getInstance().getTelemetry().addData("Y Pos:", Odometry.getInstance().getY());
 
 
         FtcDashboard.getInstance().getTelemetry().addData("Velocity Gun:", GunControl.getInstance().getVelocity());
@@ -75,17 +82,20 @@ public class TeleOp extends OpMode
         FtcDashboard.getInstance().getTelemetry().addData("Velocity Brush:", TransferBall.getInstance().getVelocityBrush());
         FtcDashboard.getInstance().getTelemetry().addData("Degree kick:", TransferBall.getInstance().getDegreeServo());
         FtcDashboard.getInstance().getTelemetry().addData("Degree tower:", GunControl.getInstance().getTowerDegree());
-        FtcDashboard.getInstance().getTelemetry().addData("OdometerX:", Vehicles.getInstance().getPositionOdometerX());
-        FtcDashboard.getInstance().getTelemetry().addData("OdometerY:", Vehicles.getInstance().getPositionOdometerY());
-        FtcDashboard.getInstance().getTelemetry().addData("Yaw:", Gyro.getInstance().getYaw());
+//        FtcDashboard.getInstance().getTelemetry().addData("OdometerX:", Vehicles.getInstance().getPositionOdometerX());
+//        FtcDashboard.getInstance().getTelemetry().addData("OdometerY:", Vehicles.getInstance().getPositionOdometerY());
+//        FtcDashboard.getInstance().getTelemetry().addData("Yaw:", Gyro.getInstance().getYaw());
+//        FieldView.renderRobot();
         FtcDashboard.getInstance().getTelemetry().update();
 
-        Vehicles.getInstance().moveToDirection(-gamepad1.left_stick_y,
-                gamepad1.left_stick_x,
-                gamepad1.right_stick_x);
+//        GunControl.getInstance().addTowerDegree(AprilTag.getInstance().getYaw());
 
-        GunControl.getInstance().startShot();
-        TransferBall.getInstance().startBrush();
+//        Vehicles.getInstance().moveToDirection(-gamepad1.left_stick_y * kDrive,
+//                gamepad1.left_stick_x * kDrive,
+//                (gamepad1.right_stick_x - 0.2) * kDrive);
+
+//        GunControl.getInstance().startShot();
+//        TransferBall.getInstance().startBrush();
 
 //        if (gamepad1.left_bumper) {
 //            degreeGunTower += 0.05;
@@ -96,24 +106,24 @@ public class TeleOp extends OpMode
 //        }
 //        GunControl.getInstance().setTowerDegree(GunControl.getInstance().getTowerDegree());
 
-        if (gamepad1.square) {
-            TransferBall.getInstance().setDegreeServo(0.0);
-        } else {
-            TransferBall.getInstance().setDegreeServo(0.5);
-        }
-        if (gamepad1.left_bumper) {
-            kDrive = 0.3;
-        }  else {
-            kDrive = 1;
-        }
-
-        if (gamepad1.circle) {
-            TransferBall.getInstance().startFlow();
-        } else {
-            TransferBall.getInstance().stopFlow();
-        }
+//        if (gamepad1.square) {
+//            TransferBall.getInstance().setDegreeServo(0.0);
+//        } else {
+//            TransferBall.getInstance().setDegreeServo(0.5);
+//        }
+//        if (gamepad1.left_bumper) {
+//            kDrive = 0.3;
+//        }  else {
+//            kDrive = 1;
+//        }
+//
+//        if (gamepad1.circle) {
+//            TransferBall.getInstance().startFlow();
+//        } else {
+//            TransferBall.getInstance().stopFlow();
+//        }
 //        if (gamepad1.right_bumper) {
-//            autoGunBall(-860, 1200);
+//            autoGunBall(800, 950);
 //        } else {
 //            TransferBall.getInstance().stopFlow();
 //        }
@@ -136,6 +146,7 @@ public class TeleOp extends OpMode
         while (countBall < 2) {
             GunControl.getInstance().startShot();
             TransferBall.getInstance().startFlow();
+
             if (GunControl.getInstance().getSpeedGun() < -860) {
                 runtime.reset();
                 while (runtime.milliseconds() < 600) {
