@@ -1,13 +1,20 @@
-package org.firstinspires.ftc.teamcode.main.opmodes.teleop;
+package org.firstinspires.ftc.teamcode.main.test;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
+import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
+import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
 
 import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.separatorConfig;
 
 import org.firstinspires.ftc.teamcode.main.modules.separator.Separator;
 import org.firstinspires.ftc.teamcode.main.modules.transfer.Brush;
+import org.firstinspires.ftc.teamcode.main.movement.Odometry;
 import org.firstinspires.ftc.teamcode.main.movement.Vehicles;
 import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
 
@@ -17,26 +24,23 @@ import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
     EDGE - ПОБЕДА!
  */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp", group="Dev")
-public class TeleOp extends OpMode {
-    // Declare OpMode members.
+@TeleOp(name="TeleOpTest", group="Test")
+@Config
+public class TeleOpTest extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
+    public Motor left = new Motor("gun_motor_left");
+    public static double power;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
     @Override
     public void init() {
         Vehicles.getInstance().initialize(hardwareMap);
         Brush.getInstance().initialize(hardwareMap);
+        OdometerPinpoint.getInstance().initialize(hardwareMap);
         GunControl.getInstance().initialize(hardwareMap);
-        Separator.getInstance().initialize(hardwareMap);
-//        Gyro.getInstance().initialize(hardwareMap);
-//        Vision.getInstance().initialize(hardwareMap);
-//        AprilTag.getInstance().initialize(hardwareMap);
+        TransferBall.getInstance().initialize(hardwareMap);
         if (Vehicles.getInstance().isInitialized() &&
                 GunControl.getInstance().isInitialized() &&
-                Separator.getInstance().isInitialized()) {
+                TransferBall.getInstance().isInitialized()) {
             FtcDashboard.getInstance().getTelemetry().addData("Status", "Initialized");
         }
 //        Vision.getInstance().startStreaming();
@@ -47,6 +51,8 @@ public class TeleOp extends OpMode {
      */
     @Override
     public void init_loop() {
+        Odometry.getInstance().setPosition(0, 0);
+        Odometry.getInstance().setYaw(0);
     }
 
     /*
@@ -54,6 +60,8 @@ public class TeleOp extends OpMode {
      */
     @Override
     public void start() {
+        Odometry.getInstance().setPosition(0, 0);
+        Odometry.getInstance().setYaw(0);
         runtime.reset();
     }
 
@@ -62,30 +70,27 @@ public class TeleOp extends OpMode {
      */
     @Override
     public void loop() {
-
+        Odometry.getInstance().odometryTick();
         FtcDashboard.getInstance().getTelemetry().addData("Velocity Gun:", GunControl.getInstance().getVelocity());
 //        FtcDashboard.getInstance().getTelemetry().addData("Last color:", Separator.getInstance().getLastColor());
 //        FtcDashboard.getInstance().getTelemetry().addData("Separator pos:", Separator.getInstance().getEncoderPos());
 //        FtcDashboard.getInstance().getTelemetry().addData("Velocity Flow:", TransferBall.getInstance().getVelocityFlow());
         FtcDashboard.getInstance().getTelemetry().addData("Velocity Brush:", Brush.getInstance().getVelocityBrush());
-        FtcDashboard.getInstance().getTelemetry().addData("Degree tower:", GunControl.getInstance().getTowerDegree());
-        FtcDashboard.getInstance().getTelemetry().addData("Separator position", Separator.getInstance().getEncoderPos());
-//        FtcDashboard.getInstance().getTelemetry().addData("OdometerX:", Vehicles.getInstance().getPositionOdometerX());
-//        FtcDashboard.getInstance().getTelemetry().addData("OdometerY:", Vehicles.getInstance().getPositionOdometerY());
-//        FtcDashboard.getInstance().getTelemetry().addData("Yaw:", Vehicles.getInstance.getYaw());
-//        AprilTag.getInstance().telemetryAprilTag();
-//        Vision.getInstance().stopStreaming();
+        FtcDashboard.getInstance().getTelemetry().addData("Yaw robot:", OdometerPinpoint.getInstance().getYaw());
+        FtcDashboard.getInstance().getTelemetry().addData("Velocity Flow", TransferBall.getInstance().getVelocityFlow());
 
         FtcDashboard.getInstance().getTelemetry().update();
 
-        Brush.getInstance().startBrush();
-//        Separator.getInstance().turnToPosition(separatorConfig.POSITION_1);
-//        Separator.getInstance().kickToGun();
-//        GunControl.getInstance().startShot();
-//        Separator.getInstance().startSeparator();
+        TransferBall.getInstance().startBrush();
+        GunControl.getInstance().startShot();
+        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw());
         Vehicles.getInstance().moveToDirection(gamepad1.left_stick_y,
                 gamepad1.left_stick_x,
-                gamepad1.right_stick_x);
+                -gamepad1.right_stick_x);
+        if (gamepad1.square) {
+            TransferBall.getInstance().startFlow();
+        }
+        TransferBall.getInstance().startFlow();
     }
 
     /*

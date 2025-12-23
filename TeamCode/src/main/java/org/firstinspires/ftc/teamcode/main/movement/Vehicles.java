@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.main.movement;
 
+import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.vehicles;
+
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
+import org.firstinspires.ftc.teamcode.core.util.pid.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
 import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 
@@ -21,9 +24,9 @@ public final class Vehicles implements Initializable {
     private final Motor rightBackMotor;
     private final Motor separatorMotor;
 
-    private final PIDRegulator xPosPID = new PIDRegulator(1, 1, 1);
-    private final PIDRegulator yPosPID = new PIDRegulator(1, 1, 1);
-    private final PIDRegulator yawPosPID = new PIDRegulator(1, 1, 1);
+    private static final PIDRegulator xPosPID = new PIDRegulator(1, 1, 1);
+    private static final PIDRegulator yPosPID = new PIDRegulator(1, 1, 1);
+    private static final PIDRegulator yawPosPID = new PIDRegulator(1, 1, 1);
 
 
     private Vehicles() {
@@ -46,7 +49,7 @@ public final class Vehicles implements Initializable {
         rightFrontMotor.initialize(hardwareMap);
         rightBackMotor.initialize(hardwareMap);
         separatorMotor.initialize(hardwareMap);
-        pinpoint.initialize(hardwareMap);
+        OdometerPinpoint.getInstance().initialize(hardwareMap);
 
         /*
          * Motor by default rotates clockwise
@@ -55,8 +58,8 @@ public final class Vehicles implements Initializable {
          * We should change their direction.
          */
 //        leftBackMotor.invertDirection();
-//        leftFrontMotor.invertDirection();
-        rightFrontMotor.invertDirection();
+        leftFrontMotor.invertDirection();
+//        rightFrontMotor.invertDirection();
 //        odometerX.resetEncoder();
 //        odometerY.resetEncoder();
     }
@@ -67,7 +70,7 @@ public final class Vehicles implements Initializable {
                 && rightFrontMotor.isInitialized()
                 && leftBackMotor.isInitialized()
                 && rightBackMotor.isInitialized()
-                && pinpoint.isInitialized()
+                &&  OdometerPinpoint.getInstance().isInitialized()
                 && separatorMotor.isInitialized();
     }
 
@@ -132,20 +135,29 @@ public final class Vehicles implements Initializable {
         double xSpd = 0, ySpd = 0, yawSpd = 0;
 
         if(posReg) {
-            double xErr = x - pinpoint.getX();
-            double yErr = y - pinpoint.getY();
+            double xErr = x - OdometerPinpoint.getInstance().getX();
+            double yErr = y - OdometerPinpoint.getInstance().getY();
             double[] errVector = Odometry.rotateVector(xErr, yErr, -OdometerPinpoint.getInstance().getYaw());
             xErr = errVector[0];
             yErr = errVector[1];
-            xSpd = xPosPID.PIDGet(-xErr);
-            ySpd = yPosPID.PIDGet(-yErr);
+            xSpd = xPosPID.PIDGet(xErr);
+            ySpd = yPosPID.PIDGet(yErr);
         }
 
         if(yawReg) {
+            double xErr = x - OdometerPinpoint.getInstance().getX();
+            double yErr = y - OdometerPinpoint.getInstance().getY();
             double yawErr = OdometerPinpoint.getInstance().getShortestPathToAngle(Odometry.getInstance().getYaw(), yaw);
             yawSpd = yawPosPID.PIDGet(-yawErr);
+            double dist = Math.hypot(Math.abs(xErr), Math.abs(yErr));
+            double k = Math.min(0.0, dist / 70.0);
+            yawSpd *= k;
         }
-        return moveToDirection(ySpd * 0.5, xSpd * 0.5, yawSpd * 0.5, true);
+        FtcDashboard.getInstance().getTelemetry().addData("X speed", Motor.normalizePower(xSpd));
+        FtcDashboard.getInstance().getTelemetry().addData("Y speed", Motor.normalizePower(ySpd));
+        FtcDashboard.getInstance().getTelemetry().addData("Yaw speed", Motor.normalizePower(yawSpd));
+        FtcDashboard.getInstance().getTelemetry().update();
+        return moveToDirection(ySpd, xSpd, yawSpd, true);
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -169,6 +181,12 @@ public final class Vehicles implements Initializable {
         xPosPID.setCoefficients(pX, iX, dX);
         yPosPID.setCoefficients(pY, iY, dY);
         yawPosPID.setCoefficients(pYaw, iYaw, dYaw);
+    }
+
+    public void setPosPID(PIDCoefficients pidX, PIDCoefficients pidY, PIDCoefficients pidYaw) {
+        xPosPID.setCoefficients(pidX);
+        yPosPID.setCoefficients(pidY);
+        yawPosPID.setCoefficients(pidYaw);
     }
 
     public double getPositionOdometerX() {

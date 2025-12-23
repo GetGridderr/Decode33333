@@ -34,6 +34,8 @@ public class PIDRegulator {
         this.KD = KD;
     }
 
+    public void setSetpoint(double setpoint) { this.setpoint = setpoint; }
+
     public void setCoefficients(PIDCoefficients pidCoefficients) {
         this.KP = pidCoefficients.getKP();
         this.KI = pidCoefficients.getKI();

@@ -32,6 +32,7 @@ public final class GunControl implements Initializable {
         SensorVoltage.getInstance().initialize(hardwareMap);
         servo.initialize(hardwareMap);
         SensorVoltage.getInstance().initialize(hardwareMap);
+        motorLeft.invertDirection();
     }
 
     @Override
@@ -47,7 +48,7 @@ public final class GunControl implements Initializable {
 
     public void startShot() {
         FtcDashboard.getInstance().getTelemetry().update();
-        motorLeft.setPIDCoefficients(gunConfig.gunPid);
+        motorLeft.setPIDCoefficients(gunConfig.kP, gunConfig.kI, gunConfig.kD);
         motorLeft.setAlpha(gunConfig.alpha);
         motorLeft.setSpeedMul(gunConfig.spdMul);
         motorLeft.setSpeed(gunConfig.velocity);  // sensorVoltage.calculateCoefficientVoltage(velocity)
@@ -60,7 +61,11 @@ public final class GunControl implements Initializable {
 
     public void setTowerDegree(double degree) {
         gunConfig.degreeTower = degree;
-        servo.setServoPosition(degree);
+        servo.setServoPosition((degree / 360) * gunConfig.kTower);
+    }
+
+    public void testPower() {
+        motorLeft.setPower(gunConfig.velocity);
     }
 
 
@@ -72,19 +77,5 @@ public final class GunControl implements Initializable {
         return gunConfig.degreeTower;
     }
 
-    public void aimToAprilTag() {
-        double bearing = AprilTag.getInstance().getBearing();
-        double servoPos = servo.getCurrentDegree();
-        
 
-        double kP = 0.005;
-
-        double correction = bearing * kP;
-
-        double newPosition = servoPos + correction;
-        newPosition = Math.max(0.0, Math.min(1.0, newPosition));
-
-
-        servo.setServoPosition(newPosition);
-    }
 }

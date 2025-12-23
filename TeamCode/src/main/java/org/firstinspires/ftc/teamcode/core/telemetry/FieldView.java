@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.core.telemetry;
 
+import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.sizeRobotConfig;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
@@ -10,19 +12,10 @@ import org.firstinspires.ftc.teamcode.main.movement.Odometry;
 import java.util.ArrayList;
 import java.util.List;
 
-
-// coding by Timofei
-// Untested
 public final class FieldView {
     private static final List<double[]> trajectoryHistory = new ArrayList<>();
     private final int maxTrajectoryPoints = 500;
     public final static double inchesPerCm = 1.0 / 2.54;
-
-    public static double robotWidth = 45.0;
-    public static double robotLength = 45.0;
-
-    public static double halfWidth = robotWidth * 0.5;
-    public static double halfLength = robotLength * 0.5;
 
     private static void rotatePoints(double[] xPoints, double[] yPoints, double angle) {
         for (int i = 0; i < xPoints.length; i++) {
@@ -51,22 +44,22 @@ public final class FieldView {
         trajectoryHistory.add(currentPosition);
 
         double[] xPoints = new double[]{
-                +halfWidth,  // front right
-                +halfWidth,  // back right
-                -halfWidth,  // back left
-                -halfWidth};  // front left
+                +sizeRobotConfig.halfWidth,  // front right
+                +sizeRobotConfig.halfWidth,  // back right
+                -sizeRobotConfig.halfWidth,  // back left
+                -sizeRobotConfig.halfWidth};  // front left
         double[] yPoints = new double[]{
-                +halfLength,  // front right
-                -halfLength,  // back right
-                -halfLength,  // back left
-                +halfLength};  // front left
+                +sizeRobotConfig.halfLength,  // front right
+                -sizeRobotConfig.halfLength,  // back right
+                -sizeRobotConfig.halfLength,  // back left
+                +sizeRobotConfig.halfLength};  // front left
         rotatePoints(xPoints, yPoints, robotYaw);
         shiftPoints(xPoints, yPoints, robotX, robotY);
         rotatePoints(xPoints, yPoints, 90);
 
         packet.fieldOverlay().setFill("blue");
         packet.fieldOverlay().fillPolygon(xPoints, yPoints);
-        packet.fieldOverlay().strokeLine(xPoints[0], yPoints[0], xPoints[3], yPoints[3]);
+        packet.fieldOverlay().strokeLine(xPoints[0] / 2.54, yPoints[0] / 2.54, xPoints[3] / 2.54, yPoints[3] / 2.54);
 //        drawTrajectory(packet);
 
 

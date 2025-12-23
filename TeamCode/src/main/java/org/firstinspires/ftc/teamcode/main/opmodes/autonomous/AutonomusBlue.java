@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.main.movement.Vehicles;
 import org.firstinspires.ftc.teamcode.main.opencv.AprilTag;
 
 @Autonomous(name="AutonomusBlue", group="Dev")
-@Config
 public class AutonomusBlue extends LinearOpMode {
 
     public ElapsedTime runtime = new ElapsedTime();

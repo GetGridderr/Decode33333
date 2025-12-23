@@ -112,7 +112,6 @@ public class AprilTag implements Initializable {
 
     public void updateAprilTagData() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        FtcDashboard.getInstance().getTelemetry().addData("AprilTags Detected", currentDetections.size());
         resetApril();
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
@@ -123,10 +122,6 @@ public class AprilTag implements Initializable {
                 id = detection.id;
                 bearing = detection.ftcPose.bearing;
                 range = detection.ftcPose.range;
-
-                FtcDashboard.getInstance().getTelemetry().addData("ID", detection.id);
-                FtcDashboard.getInstance().getTelemetry().addLine(String.format("XYZ %.2f %.2f %.2f", posAprilX, posAprilY, posAprilZ));
-                FtcDashboard.getInstance().getTelemetry().addData("Yaw", detection.ftcPose.yaw);
             }
         }
     }

@@ -13,9 +13,9 @@ public class TransferBall implements Initializable {
     private final Motor motorFlow;
     private final Motor motorBrush;
     private final Servomotor servoToGun;
-    public static double velocityFlow = 0.9;
-    public static double velocityBrush = 1.0;
-    public static double degreeServo = 0.5;
+    public static double velocityFlow = 0;
+    public static double velocityBrush = -0.8;
+    public static double degreeServo = 0;
 
     public TransferBall() {
         motorFlow = new Motor("motor_flow");
@@ -55,7 +55,13 @@ public class TransferBall implements Initializable {
 
     public void stopBrush() { motorBrush.setPower(0); }
 
-    public void startFlow() { motorFlow.setPower(velocityFlow); }
+    public void startFlow() {
+        if (velocityFlow == 1) {
+            motorFlow.setPower(-0.8);
+        } else if (velocityFlow == 0) {
+            motorFlow.setPower(0.0);
+        }
+    }
 
     public void stopFlow() { motorFlow.setPower(0); }
 

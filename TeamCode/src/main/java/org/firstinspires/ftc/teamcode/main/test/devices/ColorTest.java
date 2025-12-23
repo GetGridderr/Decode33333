@@ -26,6 +26,8 @@ public class ColorTest extends OpMode {
         FtcDashboard.getInstance().getTelemetry().addData("Color Red:", sensorColor.getRed());
         FtcDashboard.getInstance().getTelemetry().addData("Color Blue:", sensorColor.getBlue());
         FtcDashboard.getInstance().getTelemetry().addData("Color Green:", sensorColor.getGreen());
+        FtcDashboard.getInstance().getTelemetry().addData("Color Hue:", sensorColor.getHue());
+        FtcDashboard.getInstance().getTelemetry().addData("Color Hsv:", sensorColor.getHSV());
         FtcDashboard.getInstance().getTelemetry().update();
     }
 }
