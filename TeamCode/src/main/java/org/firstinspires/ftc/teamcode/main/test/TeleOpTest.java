@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
 import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
 
+import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.gunConfig;
 import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.separatorConfig;
 
 import org.firstinspires.ftc.teamcode.main.modules.separator.Separator;
@@ -30,6 +31,9 @@ public class TeleOpTest extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     public Motor left = new Motor("gun_motor_left");
     public static double power;
+    public static double degreeGunTower = 0;
+    public static double offset = 10;
+    public static double R = 20;
 
     @Override
     public void init() {
@@ -83,14 +87,16 @@ public class TeleOpTest extends OpMode {
 
         TransferBall.getInstance().startBrush();
         GunControl.getInstance().startShot();
-        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw());
-        Vehicles.getInstance().moveToDirection(gamepad1.left_stick_y,
-                gamepad1.left_stick_x,
-                -gamepad1.right_stick_x);
-        if (gamepad1.square) {
+        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw(), offset, R);
+        Vehicles.getInstance().moveToDirection(-gamepad1.left_stick_y * 0.8,
+                -gamepad1.left_stick_x * 0.8,
+                gamepad1.right_stick_x * 0.8);
+        if (gamepad1.dpad_right) {
             TransferBall.getInstance().startFlow();
+        } else if (!gamepad1.dpad_right) {
+            TransferBall.getInstance().stopFlow();
         }
-        TransferBall.getInstance().startFlow();
+
     }
 
     /*

@@ -36,7 +36,7 @@ public final class Odometry {
     @NonNull
     public static double[] rotateVector(double x, double y, double rot) {
         double cos = Math.cos(rot*Gyro.DEG_TO_RAD), sin = Math.sin(rot*Gyro.DEG_TO_RAD);
-        return new double[]{cos * x + sin * y, cos * y - sin * x};
+        return new double[]{cos * x - sin * y, cos * y + sin * x};
     }
 
     public void setPosition(double x, double y) {

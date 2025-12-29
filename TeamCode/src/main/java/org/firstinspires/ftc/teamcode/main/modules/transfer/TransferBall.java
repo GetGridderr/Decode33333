@@ -12,15 +12,14 @@ public class TransferBall implements Initializable {
     private static final TransferBall INSTANCE = new TransferBall();
     private final Motor motorFlow;
     private final Motor motorBrush;
-    private final Servomotor servoToGun;
-    public static double velocityFlow = 0;
-    public static double velocityBrush = -0.8;
-    public static double degreeServo = 0;
+    public static double velocityFlow = 1;
+    public static double velocityBrush = 0.8;
+    public static double vel = 0.7;
+    public static double degreeServo = 0.6;
 
     public TransferBall() {
         motorFlow = new Motor("motor_flow");
         motorBrush = new Motor("motor_brush");
-        servoToGun = new Servomotor("servo_to_gun");
     }
 
     public static TransferBall getInstance() { return INSTANCE; }
@@ -29,12 +28,11 @@ public class TransferBall implements Initializable {
     public void initialize(HardwareMap hardwareMap) {
         motorFlow.initialize(hardwareMap);
         motorBrush.initialize(hardwareMap);
-        servoToGun.initialize(hardwareMap);
 //        motorBrush.setDirection(motorBrush.getDirection().inverted());
     }
 
     @Override
-    public boolean isInitialized() { return motorFlow.isInitialized() && servoToGun.isInitialized(); }
+    public boolean isInitialized() { return motorFlow.isInitialized(); }
 
     public void setVelocityFlow(double velocity) { velocityFlow = velocity; }
 
@@ -44,10 +42,10 @@ public class TransferBall implements Initializable {
 
     public double getVelocityBrush() { return velocityBrush; }
 
-    public void setDegreeServo(double degree) {
-        degreeServo = degree;
-        servoToGun.setServoPosition(degreeServo);
-    }
+//    public void setDegreeServo(double degree) {
+//        degreeServo = degree;
+//        servoToGun.setServoPosition(degreeServo);
+//    }
 
     public double getDegreeServo() { return degreeServo; }
 
@@ -57,10 +55,14 @@ public class TransferBall implements Initializable {
 
     public void startFlow() {
         if (velocityFlow == 1) {
-            motorFlow.setPower(-0.8);
+            motorFlow.setPower(vel);
         } else if (velocityFlow == 0) {
             motorFlow.setPower(0.0);
         }
+    }
+
+    public void startFlowAuto() {
+        motorFlow.setPower(0.5);
     }
 
     public void stopFlow() { motorFlow.setPower(0); }

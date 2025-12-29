@@ -52,7 +52,7 @@ public class PIDRegulator {
     }
     public double PIDGet(double input){
         double err = this.setpoint - input;
-        double d = this.old_err - err;
+        double d = err - this.old_err;
         double i = this.integral_err;
         this.old_err = err;
         this.integral_err += err;

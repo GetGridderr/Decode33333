@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.movement;
 
-import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.vehicles;
-
-
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
@@ -23,6 +21,8 @@ public final class Vehicles implements Initializable {
     private final Motor leftBackMotor;
     private final Motor rightBackMotor;
     private final Motor separatorMotor;
+    public double yawErr = 0;
+    public boolean isBusy = false;
 
     private static final PIDRegulator xPosPID = new PIDRegulator(1, 1, 1);
     private static final PIDRegulator yPosPID = new PIDRegulator(1, 1, 1);
@@ -62,6 +62,11 @@ public final class Vehicles implements Initializable {
 //        rightFrontMotor.invertDirection();
 //        odometerX.resetEncoder();
 //        odometerY.resetEncoder();
+
+        leftFrontMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFrontMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBackMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBackMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     @Override
@@ -85,10 +90,6 @@ public final class Vehicles implements Initializable {
                                    double horizontal,
                                    double turn,
                                    boolean normalize) {
-        double deadZone = 0.2;
-        if (Math.abs(forward) < deadZone) forward = 0;
-        if (Math.abs(horizontal) < deadZone) horizontal = 0;
-        if (Math.abs(turn) < deadZone) turn = 0;
 
         if(forward == 0 && horizontal == 0 && turn == 0) {
             stopAll();
@@ -140,22 +141,22 @@ public final class Vehicles implements Initializable {
             double[] errVector = Odometry.rotateVector(xErr, yErr, -OdometerPinpoint.getInstance().getYaw());
             xErr = errVector[0];
             yErr = errVector[1];
-            xSpd = xPosPID.PIDGet(xErr);
+            xSpd = xPosPID.PIDGet(-xErr);
             ySpd = yPosPID.PIDGet(yErr);
+            isBusy = true;
         }
-
+        yawErr = OdometerPinpoint.getInstance().getShortestPathToAngle(OdometerPinpoint.getInstance().getYaw(), yaw);
         if(yawReg) {
-            double xErr = x - OdometerPinpoint.getInstance().getX();
-            double yErr = y - OdometerPinpoint.getInstance().getY();
-            double yawErr = OdometerPinpoint.getInstance().getShortestPathToAngle(Odometry.getInstance().getYaw(), yaw);
-            yawSpd = yawPosPID.PIDGet(-yawErr);
-            double dist = Math.hypot(Math.abs(xErr), Math.abs(yErr));
-            double k = Math.min(0.0, dist / 70.0);
-            yawSpd *= k;
+            yawSpd = yawPosPID.PIDGet(yawErr);
+//            double dist = Math.hypot(Math.abs(xErr), Math.abs(yErr));
+//            double k = Math.min(0.0, dist / 70.0);
+//            yawSpd *= k;
         }
+        FtcDashboard.getInstance().getTelemetry().addData("ErrYaw", yawErr);
         FtcDashboard.getInstance().getTelemetry().addData("X speed", Motor.normalizePower(xSpd));
         FtcDashboard.getInstance().getTelemetry().addData("Y speed", Motor.normalizePower(ySpd));
         FtcDashboard.getInstance().getTelemetry().addData("Yaw speed", Motor.normalizePower(yawSpd));
+
         FtcDashboard.getInstance().getTelemetry().update();
         return moveToDirection(ySpd, xSpd, yawSpd, true);
     }

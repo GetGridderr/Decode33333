@@ -57,14 +57,18 @@ public class OdometerPinpoint extends Device {
         pinpoint.update();
         pos = pinpoint.getPosition();
         double yaw = pos.getHeading(AngleUnit.DEGREES);
-        if(yaw - oldYaw > 270) {
+        if(yaw - oldYaw > 360) {
             rotations -= 1;
         }
-        if(oldYaw - yaw > 270) {
+        if(oldYaw - yaw > 360) {
             rotations += 1;
         }
         oldYaw = yaw;
         return rotations * 360.0 + yaw;
+    }
+
+    public void reset() {
+        pinpoint.resetPosAndIMU();
     }
 
     public double getSpeedX() {

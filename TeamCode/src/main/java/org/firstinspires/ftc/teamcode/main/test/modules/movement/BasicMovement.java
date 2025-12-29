@@ -161,7 +161,6 @@ public class BasicMovement extends OpMode
         }
 
         if (countBall == 2) {
-            TransferBall.getInstance().setDegreeServo(0.0);
         }
     }
 
