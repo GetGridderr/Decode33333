@@ -22,7 +22,8 @@ import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
 // coding by Matvey Ivanovv
 
 /*
-    EDGE - ПОБЕДА!
+    EDGE - 33333!
+    AIR лучше
  */
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOpBlue", group="Dev")
