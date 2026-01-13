@@ -6,14 +6,12 @@ import org.firstinspires.ftc.teamcode.core.device.Device;
 import org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage;
 import org.firstinspires.ftc.teamcode.core.device.trait.Directional;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDCoefficients;
-import org.firstinspires.ftc.teamcode.core.util.pid.PIDController;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 
 public class Motor extends Device implements Directional {

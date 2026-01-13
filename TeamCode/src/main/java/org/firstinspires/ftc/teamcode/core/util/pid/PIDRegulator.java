@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.core.util.pid;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-
 public class PIDRegulator {
     private double KP = 0;
     private double KD = 0;
@@ -44,14 +42,14 @@ public class PIDRegulator {
 
     public double PIDGet(double input, double setpoint){
         double err = input - setpoint;
-        double d = this.old_err - err;
+        double d = err - this.old_err;
         double i = this.integral_err;
         this.old_err = err;
         this.integral_err += err;
         return err * this.KP + d * this.KD + i * this.KI;
     }
     public double PIDGet(double input){
-        double err = this.setpoint - input;
+        double err = input - this.setpoint;
         double d = err - this.old_err;
         double i = this.integral_err;
         this.old_err = err;

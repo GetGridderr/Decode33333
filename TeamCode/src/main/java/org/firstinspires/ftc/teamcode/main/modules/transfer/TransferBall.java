@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.main.modules.transfer;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.core.device.servomotor.Servomotor;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
 import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
@@ -13,8 +15,8 @@ public class TransferBall implements Initializable {
     private final Motor motorFlow;
     private final Motor motorBrush;
     public static double velocityFlow = 1;
-    public static double velocityBrush = 0.8;
-    public static double vel = 0.7;
+    public static double velocityBrush = 1.0;
+    public static double vel = 1.0;
     public static double degreeServo = 0.6;
 
     public TransferBall() {
@@ -28,6 +30,7 @@ public class TransferBall implements Initializable {
     public void initialize(HardwareMap hardwareMap) {
         motorFlow.initialize(hardwareMap);
         motorBrush.initialize(hardwareMap);
+        motorBrush.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 //        motorBrush.setDirection(motorBrush.getDirection().inverted());
     }
 
@@ -49,7 +52,9 @@ public class TransferBall implements Initializable {
 
     public double getDegreeServo() { return degreeServo; }
 
-    public void startBrush() { motorBrush.setPower(velocityBrush); }
+    public void startBrush() {
+        motorBrush.setPower(velocityBrush);
+    }
 
     public void stopBrush() { motorBrush.setPower(0); }
 
@@ -63,6 +68,10 @@ public class TransferBall implements Initializable {
 
     public void startFlowAuto() {
         motorFlow.setPower(0.5);
+    }
+
+    public void setVelFlow(double velo) {
+        vel = velo;
     }
 
     public void stopFlow() { motorFlow.setPower(0); }

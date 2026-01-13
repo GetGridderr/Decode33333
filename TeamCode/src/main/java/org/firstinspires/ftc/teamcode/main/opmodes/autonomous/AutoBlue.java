@@ -24,16 +24,19 @@ public class AutoBlue extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        waitForStart();
         initialize();
-        doCorrectState();
-        updateSystem();
+        while (opModeIsActive()) {
+            doCorrectState();
+            updateSystem();
+        }
     }
 
     private void initialize() {
         Vehicles.getInstance().initialize(hardwareMap);
         TransferBall.getInstance().initialize(hardwareMap);
         GunControl.getInstance().initialize(hardwareMap);
-        Vehicles.getInstance().setPosPID(vehicles.pXY, 0, vehicles.dXY, vehicles.pXY, 0, vehicles.dXY, vehicles.pYaw, vehicles.iYaw, vehicles.dYaw);
+        Vehicles.getInstance().setPosPID(vehicles.pX, 0, vehicles.dX, vehicles.pY, 0, vehicles.dY, vehicles.pYaw, vehicles.iYaw, vehicles.dYaw);
         telemetry.addData("Status", "Initialized");
     }
 
@@ -194,6 +197,6 @@ public class AutoBlue extends LinearOpMode {
         FtcDashboard.getInstance().getTelemetry().addData("Yaw:", OdometerPinpoint.getInstance().getYaw());
         FtcDashboard.getInstance().getTelemetry().addData("YawErr", Vehicles.getInstance().yawErr);
         FtcDashboard.getInstance().getTelemetry().update();
-        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() - 50, gunConfig.offsetGun, gunConfig.R);
+        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() - 50, gunConfig.offsetGun, gunConfig.distanceToTarget);
     }
 }

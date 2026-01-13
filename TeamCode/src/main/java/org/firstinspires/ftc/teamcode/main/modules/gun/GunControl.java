@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.core.device.servomotor.Servomotor;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
 
 import org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage;
-import org.firstinspires.ftc.teamcode.main.opencv.AprilTag;
 
 // coding by Matvey Ivanovv
 
@@ -64,7 +63,7 @@ public final class GunControl implements Initializable {
     public void stopShot() { motorLeft.setPower(0); }
 
     public void setTowerDegree(double degree, double offsetGun, double R) {
-        if (degree > 60) degree = 60;
+        if (degree > 100) degree = 100;
         double theta = Math.toRadians(degree);
 
         double correction = Math.atan(offsetGun * Math.sin(-theta) / R);
@@ -77,22 +76,17 @@ public final class GunControl implements Initializable {
         setAngleDegree((-degree - correctionDegrees) / 360 + gunConfig.offsetTurn);
     }
 
-    public void testPower() {
-        motorLeft.setPower(gunConfig.velocity);
-    }
-
     public void setAngleDegree(double degree) {
         if (degree < 0) {
             degree = (degree * -1);
         }
-        if (degree > 0.23) degree = 0.22;
+        if (degree > 0.3) degree = 0.3;
         if (degree < 0.0) degree = 0.0;
         gunConfig.degreeAngleGun = degree;
         FtcDashboard.getInstance().getTelemetry().addData("Degree", degree);
 
         servo.setServoPosition(degree);
     }
-
 
     public double getSpeedGun() {
         return motorLeft.getEncoderSpeed();

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.main.movement;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -10,12 +11,9 @@ import org.firstinspires.ftc.teamcode.core.util.pid.PIDCoefficients;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
 import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 
-
+@Config
 public final class Vehicles implements Initializable {
     private static final Vehicles INSTANCE = new Vehicles();
-
-    private OdometerPinpoint pinpoint;
-
     private final Motor leftFrontMotor;
     private final Motor rightFrontMotor;
     private final Motor leftBackMotor;
@@ -23,6 +21,7 @@ public final class Vehicles implements Initializable {
     private final Motor separatorMotor;
     public double yawErr = 0;
     public boolean isBusy = false;
+    public static double power = 1;
 
     private static final PIDRegulator xPosPID = new PIDRegulator(1, 1, 1);
     private static final PIDRegulator yPosPID = new PIDRegulator(1, 1, 1);
@@ -34,8 +33,6 @@ public final class Vehicles implements Initializable {
         rightFrontMotor= new Motor("right_front_vehicle_motor"); //
         leftBackMotor = new Motor("left_back_vehicle_motor");
         rightBackMotor = new Motor("right_back_vehicle_motor");
-        separatorMotor = new Motor("motor_separator");
-        pinpoint = new OdometerPinpoint("pinpoint");
     }
 
     public static Vehicles getInstance() {
@@ -48,25 +45,16 @@ public final class Vehicles implements Initializable {
         leftBackMotor.initialize(hardwareMap);
         rightFrontMotor.initialize(hardwareMap);
         rightBackMotor.initialize(hardwareMap);
-        separatorMotor.initialize(hardwareMap);
         OdometerPinpoint.getInstance().initialize(hardwareMap);
-
-        /*
-         * Motor by default rotates clockwise
-         * so right motors relative to left
-         * motors will rotate backward.
-         * We should change their direction.
-         */
 //        leftBackMotor.invertDirection();
+        leftBackMotor.invertDirection();
         leftFrontMotor.invertDirection();
 //        rightFrontMotor.invertDirection();
-//        odometerX.resetEncoder();
-//        odometerY.resetEncoder();
 
         leftFrontMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBackMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftBackMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBackMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     @Override
@@ -84,6 +72,13 @@ public final class Vehicles implements Initializable {
         leftBackMotor.setPower(0);
         rightFrontMotor.setPower(0);
         rightBackMotor.setPower(0);
+    }
+
+    public double[] fieldCentricToRobotCentric(double forward, double horizontal, double turn) {
+        double turnRad = Math.toRadians(turn);
+        double rotatedFroward = forward * Math.cos(-turnRad) - horizontal * Math.sin(-turnRad);
+        double rotatedHorizontal = forward * Math.sin(-turnRad) + horizontal * Math.cos(-turnRad);
+        return new double[] {rotatedFroward, rotatedHorizontal};
     }
 
     public boolean moveToDirection(double forward,
@@ -119,10 +114,10 @@ public final class Vehicles implements Initializable {
             FtcDashboard.getInstance().getTelemetry().addData("Max motor speed", maxSpd);
         }
 
-        leftFrontMotor.setPower(Motor.normalizePower(frontLeftPower));
-        leftBackMotor.setPower(Motor.normalizePower(backLeftPower));
-        rightFrontMotor.setPower(Motor.normalizePower(frontRightPower));
-        rightBackMotor.setPower(Motor.normalizePower(backRightPower));
+        leftFrontMotor.setPower(Motor.normalizePower(frontLeftPower) * power);
+        leftBackMotor.setPower(Motor.normalizePower(backLeftPower) * power);
+        rightFrontMotor.setPower(Motor.normalizePower(frontRightPower) * power);
+        rightBackMotor.setPower(Motor.normalizePower(backRightPower) * power);
         return true;
     }
 
@@ -136,8 +131,9 @@ public final class Vehicles implements Initializable {
         double xSpd = 0, ySpd = 0, yawSpd = 0;
 
         if(posReg) {
-            double xErr = x - OdometerPinpoint.getInstance().getX();
-            double yErr = y - OdometerPinpoint.getInstance().getY();
+            double xErr = OdometerPinpoint.getInstance().getX() - x;
+            double yErr = OdometerPinpoint.getInstance().getY() - y;
+            if (Math.abs(xErr) < 8 && Math.abs(yErr) < 8) return false;
             double[] errVector = Odometry.rotateVector(xErr, yErr, -OdometerPinpoint.getInstance().getYaw());
             xErr = errVector[0];
             yErr = errVector[1];
@@ -148,9 +144,6 @@ public final class Vehicles implements Initializable {
         yawErr = OdometerPinpoint.getInstance().getShortestPathToAngle(OdometerPinpoint.getInstance().getYaw(), yaw);
         if(yawReg) {
             yawSpd = yawPosPID.PIDGet(yawErr);
-//            double dist = Math.hypot(Math.abs(xErr), Math.abs(yErr));
-//            double k = Math.min(0.0, dist / 70.0);
-//            yawSpd *= k;
         }
         FtcDashboard.getInstance().getTelemetry().addData("ErrYaw", yawErr);
         FtcDashboard.getInstance().getTelemetry().addData("X speed", Motor.normalizePower(xSpd));
@@ -158,7 +151,11 @@ public final class Vehicles implements Initializable {
         FtcDashboard.getInstance().getTelemetry().addData("Yaw speed", Motor.normalizePower(yawSpd));
 
         FtcDashboard.getInstance().getTelemetry().update();
-        return moveToDirection(ySpd, xSpd, yawSpd, true);
+        return moveToDirection(ySpd * 0.8, xSpd * 0.8, yawSpd * 0.8, true);
+    }
+
+    public boolean isPosition(double x, double y, double yaw) {
+        return Math.abs(x - OdometerPinpoint.getInstance().getX()) > 14 && Math.abs(y - OdometerPinpoint.getInstance().getY()) > 14 && Math.abs(yaw - OdometerPinpoint.getInstance().getYaw()) > 14;
     }
 
     @SuppressWarnings("UnusedReturnValue")

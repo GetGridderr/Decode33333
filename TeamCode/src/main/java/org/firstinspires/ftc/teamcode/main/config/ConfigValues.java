@@ -6,29 +6,28 @@ import org.firstinspires.ftc.teamcode.core.util.pid.PIDCoefficients;
 @Config
 public class ConfigValues {
     public static class GunConfig {
-        public double velocity = -920;
+        public double velocity = -980;
         public double degreeTower = 0.35;
         public double degreeAngleGun = 0.1;
         public double kP = 0.003;
         public double kI = 0.0;
         public double kD = 0.00;
         public double alpha = 1;
-        public double spdMul = 0.00003;
-        public double offsetTurn = 0.14;
-        public double offsetGun = 10;
-        public double R = 25;
+        public double spdMul = 0.00004;
+        public double offsetTurn = 0.12;
+        public double offsetGun = 25;
+        public double distanceToTarget = 55;
     }
     public static GunConfig gunConfig = new GunConfig();
 
     public static class Vehicles {
-        public PIDCoefficients xPid = new PIDCoefficients(0.03, 0.0, 0.01);
-        public PIDCoefficients yPid = new PIDCoefficients(0.023, 0.0, 0.015);
-        public PIDCoefficients yawPid = new PIDCoefficients(0.02, 0.0, 0.02);
-        public double pXY = 0.02;
-        public double dXY = 0.04;
-        public double pYaw = 0.018;
+        public double pY = 0.014;
+        public double pX = 0.02;
+        public double dX = 0.023;
+        public double dY = 0.021;
+        public double pYaw = 0.015;
         public double iYaw = 0.0;
-        public double dYaw = 0.026;
+        public double dYaw = 0.028;
         public double kDrive = 1.0;
     }
     public static Vehicles vehicles = new Vehicles();
@@ -62,8 +61,8 @@ public class ConfigValues {
     public static CameraConfig cameraConfig = new CameraConfig();
 
     public static class PinpointConfig {
-        public double xOffset = 0.0;
-        public double yOffset = 0.0;
+        public double xOffset = 10.8;
+        public double yOffset = 23.7;
     }
     public static PinpointConfig pinpointConfig = new PinpointConfig();
 
@@ -95,28 +94,5 @@ public class ConfigValues {
         public double ySwap = 150;
         public double yawSwap = 0;
     }
-    public static PositionAutoBlue positionAutoRed = new PositionAutoRed();
-
-    public static class AutoTime {
-        public double One = 2000;
-        public double Two = 2500;
-        public double Three = 2000;
-        public double Four = 3500;
-        public double Five = 1500;
-        public double Six = 2000;
-        public double Seven = 2000;
-        public double Eight = 2500;
-        public double Nine = 2500;
-        public double Ten = 1500;
-        public double Eleven = 2500;
-        public double Twelve = 3000;
-        public double Thirteen = 1500;
-        public double Fourteen = 2000;
-        public double Fifteen = 3000;
-        public double Sixteen = 1000;
-        public double Seventeen = 1000;
-
-    }
-
-    public static AutoTime autoTime = new AutoTime();
+    public static PositionAutoRed positionAutoRed = new PositionAutoRed();
 }

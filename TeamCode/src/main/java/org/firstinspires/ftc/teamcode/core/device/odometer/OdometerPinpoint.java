@@ -32,6 +32,7 @@ public class OdometerPinpoint extends Device {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         pinpoint.setOffsets(pinpointConfig.xOffset, pinpointConfig.yOffset, DistanceUnit.CM);
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
         pos = pinpoint.getPosition();
     }
