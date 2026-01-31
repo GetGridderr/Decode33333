@@ -15,6 +15,8 @@ public class OdometerPinpoint extends Device {
     private GoBildaPinpointDriver pinpoint;
     private double oldYaw = 0;
     private int rotations = 0;
+    private double lastYaw = 0;
+    private long lastYawTime = 0;
     private Pose2D pos;
 
     private GoBildaPinpointDriver.EncoderDirection directionX = GoBildaPinpointDriver.EncoderDirection.FORWARD;
@@ -30,8 +32,9 @@ public class OdometerPinpoint extends Device {
     @Override
     public void initialize(HardwareMap hardwareMap) {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-        pinpoint.setOffsets(pinpointConfig.xOffset, pinpointConfig.yOffset, DistanceUnit.CM);
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        pinpoint.setOffsets(60, 110, DistanceUnit.MM);
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
         pos = pinpoint.getPosition();
@@ -87,6 +90,12 @@ public class OdometerPinpoint extends Device {
         pinpoint.setEncoderDirections(xDirection, yDirection);
         directionX = xDirection;
         directionY = yDirection;
+    }
+
+    public double getDistanceToTarget(double xTarget, double yTarget) {
+        double dx = xTarget - getX();
+        double dy = yTarget - getY();
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     public double normalizeAngle(double angle) {

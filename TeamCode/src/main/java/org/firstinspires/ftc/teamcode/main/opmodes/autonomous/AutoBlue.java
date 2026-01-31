@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 import org.firstinspires.ftc.teamcode.core.telemetry.FieldView;
 import org.firstinspires.ftc.teamcode.main.config.AutoState;
+import org.firstinspires.ftc.teamcode.main.modules.gun.DataShots;
 import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
 import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
 import org.firstinspires.ftc.teamcode.main.movement.Odometry;
@@ -23,7 +24,7 @@ public class AutoBlue extends LinearOpMode {
     private AutoState state = AutoState.INIT;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         waitForStart();
         initialize();
         while (opModeIsActive()) {
@@ -38,10 +39,10 @@ public class AutoBlue extends LinearOpMode {
         GunControl.getInstance().initialize(hardwareMap);
         Vehicles.getInstance().setPosPID(vehicles.pX, 0, vehicles.dX, vehicles.pY, 0, vehicles.dY, vehicles.pYaw, vehicles.iYaw, vehicles.dYaw);
         telemetry.addData("Status", "Initialized");
+        runtime.reset();
     }
 
     public void doCorrectState() {
-        runtime.reset();
 
         switch (state) {
             case INIT:
@@ -49,50 +50,77 @@ public class AutoBlue extends LinearOpMode {
                 runtime.reset();
                 break;
             case MOVE_TO_SHOOTING_ZERO:
-                Vehicles.getInstance().goTo(positionAutoBlue.posGun[0], positionAutoBlue.posGun[1], positionAutoBlue.posGun[2]);
-                if (runtime.milliseconds() >= 2000) {
-                    state = AutoState.SHOOTING_ZERO;
-                    runtime.reset();
+//                if (!Vehicles.getInstance().goTo(
+//                        positionAutoBlue.posGun.x - 30,
+//                        positionAutoBlue.posGun.y - 30,
+//                        positionAutoBlue.posGun.yaw)) {
+//                    DataShots dataShots = GunControl.getInstance().shotToDistance(OdometerPinpoint.getInstance().getDistanceToTarget(gunConfig.posGoalX, gunConfig.posGoalY));
+//                    gunConfig.velocity = dataShots.speed;
+//                    gunConfig.bananPosition = dataShots.angle;
+//                    gunConfig.spdMul = dataShots.k;
+//                    GunControl.getInstance().startShot();
+//                    GunControl.getInstance().setBananServo();
+//                    TransferBall.getInstance().startBrush();
+//                    TransferBall.getInstance().startFlow();
+//                }
+                while (Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw)) {
+                    Vehicles.getInstance().goTo(
+                            positionAutoBlue.posGun.x,
+                            positionAutoBlue.posGun.y,
+                            positionAutoBlue.posGun.yaw);
                 }
+                state = AutoState.MOVE_TO_SHOOTING_ZERO;
+                runtime.reset();
                 break;
             case SHOOTING_ZERO:
                 TransferBall.getInstance().startBrush();
                 GunControl.getInstance().startShot();
                 TransferBall.getInstance().startFlow();
-                if (runtime.milliseconds() >= 2500) {
+                if (runtime.milliseconds() >= 1500) {
                     state = AutoState.MOVE_TO_FIRST_EAT;
                     TransferBall.getInstance().stopBrush();
                     TransferBall.getInstance().stopFlow();
                     GunControl.getInstance().stopShot();
-                    runtime.reset();
                 }
                 break;
             case MOVE_TO_FIRST_EAT:
-                Vehicles.getInstance().goTo(positionAutoBlue.posFirstEat[0], positionAutoBlue.posFirstEat[1] + 5, positionAutoBlue.posFirstEat[2]);
-                if (runtime.milliseconds() >= 1500) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFirstEat.x,
+                        positionAutoBlue.posFirstEat.y,
+                        positionAutoBlue.posFirstEat.yaw);
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFirstEat.x,
+                        positionAutoBlue.posFirstEat.y,
+                        positionAutoBlue.posFirstEat.yaw)) {
                     state = AutoState.FINISH_FIRST_EAT;
-                    runtime.reset();
                 }
                 break;
             case FINISH_FIRST_EAT:
                 TransferBall.getInstance().startBrush();
-                Vehicles.getInstance().goTo(positionAutoBlue.posFirstFinishEat[0], positionAutoBlue.posFirstFinishEat[1], positionAutoBlue.posFirstFinishEat[2]);
-                if (runtime.milliseconds() >= 1500) {
-                    state = AutoState.DROP_RAMP;
-                    runtime.reset();
-                }
-                break;
-            case DROP_RAMP:
-                Vehicles.getInstance().goTo(positionAutoBlue.posDrop[0], positionAutoBlue.posDrop[1], positionAutoBlue.posDrop[2]);
-                if (runtime.milliseconds() >= 1500) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFirstFinishEat.x,
+                        positionAutoBlue.posFirstFinishEat.y,
+                        positionAutoBlue.posFirstFinishEat.yaw);
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFirstFinishEat.x,
+                        positionAutoBlue.posFirstFinishEat.y,
+                        positionAutoBlue.posFirstFinishEat.yaw)) {
                     state = AutoState.MOVE_TO_SHOOTING_FIRST;
-                    runtime.reset();
                 }
                 break;
             case MOVE_TO_SHOOTING_FIRST:
-                Vehicles.getInstance().goTo(positionAutoBlue.posGun[0], positionAutoBlue.posGun[1], positionAutoBlue.posGun[2]);
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw);
                 GunControl.getInstance().startShot();
-                if (runtime.milliseconds() >= 3000) {
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw)) {
                     state = AutoState.SHOOTING_FIRST;
                     runtime.reset();
                 }
@@ -101,32 +129,47 @@ public class AutoBlue extends LinearOpMode {
                 GunControl.getInstance().startShot();
                 TransferBall.getInstance().startBrush();
                 TransferBall.getInstance().startFlow();
-                if (runtime.milliseconds() >= 2000) {
+                if (runtime.milliseconds() >= 1500) {
                     GunControl.getInstance().stopShot();
                     TransferBall.getInstance().stopFlow();
                     state = AutoState.MOVE_TO_SECOND_EAT;
-                    runtime.reset();
                 }
                 break;
             case MOVE_TO_SECOND_EAT:
-                Vehicles.getInstance().goTo(positionAutoBlue.posTwoEat[0], positionAutoBlue.posTwoEat[1], positionAutoBlue.posTwoEat[2]);
-                if (runtime.milliseconds() >= 2000) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posTwoEat.x,
+                        positionAutoBlue.posTwoEat.y,
+                        positionAutoBlue.posTwoEat.yaw);
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posTwoEat.x,
+                        positionAutoBlue.posTwoEat.y,
+                        positionAutoBlue.posTwoEat.yaw)) {
                     state = AutoState.FINISH_SECOND_EAT;
-                    runtime.reset();
                 }
                 break;
             case FINISH_SECOND_EAT:
                 TransferBall.getInstance().startBrush();
-                Vehicles.getInstance().goTo(positionAutoBlue.posFinishTwoEat[0], positionAutoBlue.posFinishTwoEat[1], positionAutoBlue.posFinishTwoEat[2]);
-                if (runtime.milliseconds() >= 1500) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFinishTwoEat.x,
+                        positionAutoBlue.posFinishTwoEat.y,
+                        positionAutoBlue.posFinishTwoEat.yaw);
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFinishTwoEat.x,
+                        positionAutoBlue.posFinishTwoEat.y,
+                        positionAutoBlue.posFinishTwoEat.yaw)) {
                     state = AutoState.MOVE_TO_SHOOTING_SECOND;
-                    runtime.reset();
                 }
                 break;
             case MOVE_TO_SHOOTING_SECOND:
-                Vehicles.getInstance().goTo(positionAutoBlue.posGun[0], positionAutoBlue.posGun[1], positionAutoBlue.posGun[2]);
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw);
                 GunControl.getInstance().startShot();
-                if (runtime.milliseconds() >= 3000) {
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw)) {
                     state = AutoState.SHOOTING_SECOND;
                     runtime.reset();
                 }
@@ -135,32 +178,47 @@ public class AutoBlue extends LinearOpMode {
                 GunControl.getInstance().startShot();
                 TransferBall.getInstance().startFlow();
                 TransferBall.getInstance().startBrush();
-                if (runtime.milliseconds() >= 2000) {
+                if (runtime.milliseconds() >= 1500) {
                     GunControl.getInstance().stopShot();
                     TransferBall.getInstance().stopFlow();
                     state = AutoState.MOVE_TO_THIRD_EAT;
-                    runtime.reset();
                 }
                 break;
             case MOVE_TO_THIRD_EAT:
-                Vehicles.getInstance().goTo(positionAutoBlue.posThreeEat[0], positionAutoBlue.posThreeEat[1], positionAutoBlue.posThreeEat[2]);
-                if (runtime.milliseconds() >= 2500) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posThreeEat.x,
+                        positionAutoBlue.posThreeEat.y,
+                        positionAutoBlue.posThreeEat.yaw);
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posThreeEat.x,
+                        positionAutoBlue.posThreeEat.y,
+                        positionAutoBlue.posThreeEat.yaw)) {
                     state = AutoState.FINISH_THIRD_EAT;
-                    runtime.reset();
                 }
                 break;
             case FINISH_THIRD_EAT:
                 TransferBall.getInstance().startBrush();
-                Vehicles.getInstance().goTo(positionAutoBlue.posFinishTreeEat[0], positionAutoBlue.posFinishTreeEat[1], positionAutoBlue.posFinishTreeEat[2]);
-                if (runtime.milliseconds() >= 1500) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFinishTreeEat.x,
+                        positionAutoBlue.posFinishTreeEat.y,
+                        positionAutoBlue.posFinishTreeEat.yaw);
+                if (!Vehicles.getInstance().goTo(
+                    positionAutoBlue.posFinishTreeEat.x,
+                    positionAutoBlue.posFinishTreeEat.y,
+                    positionAutoBlue.posFinishTreeEat.yaw)) {
                     state = AutoState.MOVE_TO_SHOOTING_THIRD;
-                    runtime.reset();
                 }
                 break;
             case MOVE_TO_SHOOTING_THIRD:
-                Vehicles.getInstance().goTo(positionAutoBlue.posGun[0], positionAutoBlue.posGun[1], positionAutoBlue.posGun[2]);
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw);
                 GunControl.getInstance().startShot();
-                if (runtime.milliseconds() >= 2500) {
+                if (!Vehicles.getInstance().goTo(
+                        positionAutoBlue.posGun.x,
+                        positionAutoBlue.posGun.y,
+                        positionAutoBlue.posGun.yaw)) {
                     state = AutoState.SHOOTING_THIRD;
                     runtime.reset();
                 }
@@ -171,12 +229,17 @@ public class AutoBlue extends LinearOpMode {
                 TransferBall.getInstance().startBrush();
                 if (runtime.milliseconds() >= 2500) {
                     state = AutoState.LEAVE_FROM_ZONE;
-                    runtime.reset();
                 }
                 break;
             case LEAVE_FROM_ZONE:
-                Vehicles.getInstance().goTo(-positionAutoBlue.posFirstEat[0], positionAutoBlue.posFirstEat[1] - 5, -positionAutoBlue.posFirstEat[2]);
-                if (runtime.milliseconds() >= 1000) {
+                Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFirstEat.x,
+                        positionAutoBlue.posFirstEat.y,
+                        positionAutoBlue.posFirstEat.yaw);
+                if (Vehicles.getInstance().goTo(
+                        positionAutoBlue.posFirstEat.x,
+                        positionAutoBlue.posFirstEat.y,
+                        positionAutoBlue.posFirstEat.yaw)) {
                     state = AutoState.COMPLETE;
                     runtime.reset();
                 }
@@ -185,6 +248,7 @@ public class AutoBlue extends LinearOpMode {
                 GunControl.getInstance().stopShot();
                 TransferBall.getInstance().stopFlow();
                 TransferBall.getInstance().stopBrush();
+                Vehicles.getInstance().moveToDirection(0, 0, 0);
                 break;
         }
     }

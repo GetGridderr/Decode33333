@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 import org.firstinspires.ftc.teamcode.core.telemetry.FieldView;
+import org.firstinspires.ftc.teamcode.main.movement.Vehicles;
 
 @TeleOp
 public class PinpointTest extends OpMode {
@@ -24,6 +25,9 @@ public class PinpointTest extends OpMode {
         FtcDashboard.getInstance().getTelemetry().addData("OdometerX", OdometerPinpoint.getInstance().getX());
         FtcDashboard.getInstance().getTelemetry().addData("OdometryY", OdometerPinpoint.getInstance().getY());
         FtcDashboard.getInstance().getTelemetry().addData("OdometryYaw", OdometerPinpoint.getInstance().getYaw());
+        FtcDashboard.getInstance().getTelemetry().addData("xSpeed", OdometerPinpoint.getInstance().getSpeedX());
+        FtcDashboard.getInstance().getTelemetry().addData("ySpeed", OdometerPinpoint.getInstance().getSpeedY());
+        FtcDashboard.getInstance().getTelemetry().addData("yawSpeed", OdometerPinpoint.getInstance().getYaw());
 //        fieldView.rotatePoints(OdometerPinpoint.getInstance().getX(), OdometerPinpoint.getInstance().getY(), OdometerPinpoint.getInstance().getYaw());
         fieldView.renderRobot(OdometerPinpoint.getInstance().getX(), OdometerPinpoint.getInstance().getY(), OdometerPinpoint.getInstance().getYaw());
         FtcDashboard.getInstance().getTelemetry().update();

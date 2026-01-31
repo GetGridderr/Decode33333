@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.main.test;
+package org.firstinspires.ftc.teamcode.main.opmodes.teleop;
 
 import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.gunConfig;
-import static org.firstinspires.ftc.teamcode.main.config.ConfigValues.vehicles;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -11,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.core.device.motor.Motor;
 import org.firstinspires.ftc.teamcode.core.device.odometer.OdometerPinpoint;
 import org.firstinspires.ftc.teamcode.core.telemetry.FieldView;
-import org.firstinspires.ftc.teamcode.main.modules.gun.DataShots;
 import org.firstinspires.ftc.teamcode.main.modules.transfer.Brush;
 import org.firstinspires.ftc.teamcode.main.modules.transfer.TransferBall;
 import org.firstinspires.ftc.teamcode.main.movement.Odometry;
@@ -21,27 +19,21 @@ import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
 // coding by Matvey Ivanovv
 
 /*
-    EDGE - 33333!
-    AIR лучше
+    EDGE - ПОБЕДА!
  */
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOpTest", group="Dev")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOpBlue", group="Dev")
 @Config
-public class TeleOpTest extends OpMode {
+public class TeleOpBlue extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
-    public static double power = 0.7;
-    public static double degreeOffset = 135;
-    public static double xGoal = 125;
-    public static double yGoal = 137;
+    public Motor left = new Motor("gun_motor_left");
+    public static double power = 0.8;
+    public static double degreeOffset = -135;
+    public static double pXY = 0.02;
+    public static double dXY = 0.04;
     public static double pYaw = 0.018;
     public static double iYaw = 0.0;
     public static double dYaw = 0.026;
-    public static double powerFlow = 0.6;
-    public static double timeFlow = 50;
-    public boolean lockGun = true;
-    public boolean openFlag = true;
-    public double count = 0;
-    public double countBall = 0;
 
     @Override
     public void init() {
@@ -55,6 +47,9 @@ public class TeleOpTest extends OpMode {
                 TransferBall.getInstance().isInitialized()) {
             FtcDashboard.getInstance().getTelemetry().addData("Status", "Initialized");
         }
+
+        gunConfig.velocity = -1000;
+//        Vision.getInstance().startStreaming();
     }
 
     /*
@@ -73,7 +68,6 @@ public class TeleOpTest extends OpMode {
     public void start() {
         Odometry.getInstance().setPosition(0, 0);
         Odometry.getInstance().setYaw(0);
-        TransferBall.getInstance().closeDoor();
         runtime.reset();
     }
 
@@ -83,36 +77,46 @@ public class TeleOpTest extends OpMode {
     @Override
     public void loop() {
         Odometry.getInstance().odometryTick();
-        FtcDashboard.getInstance().getTelemetry().addData("Distance", OdometerPinpoint.getInstance().getDistanceToTarget(0, 0));
         FtcDashboard.getInstance().getTelemetry().addData("Velocity Gun:", GunControl.getInstance().getVelocity());
         FieldView.renderRobot(OdometerPinpoint.getInstance().getX() + 21, OdometerPinpoint.getInstance().getY() - 60, OdometerPinpoint.getInstance().getYaw() - 45);
         FtcDashboard.getInstance().getTelemetry().addData("SpeedX", OdometerPinpoint.getInstance().getSpeedX());
         FtcDashboard.getInstance().getTelemetry().addData("SpeedY", OdometerPinpoint.getInstance().getSpeedY());
-        FtcDashboard.getInstance().getTelemetry().addData("Velocity Brush:",Brush.getInstance().getVelocityBrush());
+//        FtcDashboard.getInstance().getTelemetry().addData("Last color:", Separator.getInstance().getLastColor());
+//        FtcDashboard.getInstance().getTelemetry().addData("Separator pos:", Separator.getInstance().getEncoderPos());
+//        FtcDashboard.getInstance().getTelemetry().addData("Velocity Flow:", TransferBall.getInstance().getVelocityFlow());
+        FtcDashboard.getInstance().getTelemetry().addData("Velocity Brush:", Brush.getInstance().getVelocityBrush());
         FtcDashboard.getInstance().getTelemetry().addData("Yaw robot:", OdometerPinpoint.getInstance().getYaw());
         FtcDashboard.getInstance().getTelemetry().addData("Velocity Flow", TransferBall.getInstance().getVelocityFlow());
         FtcDashboard.getInstance().getTelemetry().addData("Trigger", gamepad1.right_trigger);
-        Vehicles.getInstance().setPosPID(vehicles.pX, vehicles.isX, vehicles.dX, vehicles.pY, vehicles.isY, vehicles.dY, vehicles.pYaw, vehicles.iYaw, vehicles.dYaw);
-        Vehicles.getInstance().setSpeedPID(vehicles.psX, 0, vehicles.dsX, vehicles.psY, 0, vehicles.dsY, vehicles.psYaw, vehicles.isYaw, vehicles.dsYaw);
+        Vehicles.getInstance().setPosPID(pXY, 0, dXY, pXY, 0, dXY, pYaw, iYaw, dYaw);
 
         FtcDashboard.getInstance().getTelemetry().update();
-        double forward = gamepad1.left_stick_y;
-        double horizontal = -gamepad1.left_stick_x;
-        double turn = -gamepad1.right_stick_x;
-        if (Math.abs(forward) < 0.15) forward = 0;
-        if (Math.abs(horizontal) < 0.15) horizontal = 0;
-        if (Math.abs(turn) < 0.15) turn = 0;
+        double forward = -gamepad1.left_stick_y * power;
+        double horizontal = -gamepad1.left_stick_x * power;
+        double turn = -gamepad1.right_stick_x * 0.6;
 
-
-        if (gamepad1.dpad_right) {
-            Vehicles.getInstance().setPosPID(vehicles.pX, 0, vehicles.dX, vehicles.pY, 0, vehicles.dY, vehicles.pYaw, vehicles.iYaw, vehicles.dYaw);
-            Vehicles.getInstance().goTo(80, 90, -140);
+        TransferBall.getInstance().startBrush();
+        GunControl.getInstance().startShot();
+        //gunConfig.distanceToTarget = Math.sqrt(Math.pow(OdometerPinpoint.getInstance().getX(), 2) + Math.pow(OdometerPinpoint.getInstance().getY(), 2));
+        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + degreeOffset, gunConfig.offsetGun, gunConfig.distanceToTarget);
+        if (gamepad1.right_bumper) {
+            power = 0.3;
         } else {
-            Vehicles.getInstance().setSpeed(forward, horizontal, turn);
+            power = 0.8;
         }
-
-
-
+        if (gamepad1.right_trigger > 0.1) {
+            TransferBall.getInstance().startFlow();
+        }
+        if (gamepad1.right_trigger < 0.1) {
+            TransferBall.getInstance().stopFlow();
+        }
+        if (gamepad1.square) {
+            degreeOffset = 0;
+            OdometerPinpoint.getInstance().reset();
+        }
+//        double[] powerFieldCentric = Vehicles.getInstance().fieldCentricToRobotCentric(forward, horizontal, turn);
+        Vehicles.getInstance().moveToDirection(forward
+                , horizontal, turn);
 
     }
 

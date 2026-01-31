@@ -40,15 +40,15 @@ public class PIDRegulator {
         this.KD = pidCoefficients.getKD();
     }
 
-    public double PIDGet(double input, double setpoint){
-        double err = input - setpoint;
+    public double PIDGet(double input, double setpoint) {
+        double err = setpoint - input;
         double d = err - this.old_err;
         double i = this.integral_err;
         this.old_err = err;
         this.integral_err += err;
         return err * this.KP + d * this.KD + i * this.KI;
     }
-    public double PIDGet(double input){
+    public double PIDGet(double input) {
         double err = input - this.setpoint;
         double d = err - this.old_err;
         double i = this.integral_err;

@@ -22,7 +22,8 @@ import org.firstinspires.ftc.teamcode.main.opencv.AprilTag;
 public class AutonomusBlue extends LinearOpMode {
     private final ElapsedTime runtime = new ElapsedTime();
 
-    public static int count = 0;
+    public static int countBall = 0;
+
 
     public void initialize() {
         Vehicles.getInstance().initialize(hardwareMap);
@@ -54,157 +55,159 @@ public class AutonomusBlue extends LinearOpMode {
 //        Vehicles.getInstance().goTo(vehicles.targetX, vehicles.targetY, vehicles.targetYaw);
                     FtcDashboard.getInstance().getTelemetry().addData("Satrt PID", true);
                     FtcDashboard.getInstance().getTelemetry().update();
-                    while (runtime.milliseconds() < 1400 && opModeIsActive()) {
-                        Vehicles.getInstance().goTo(35, -51, 0);
+                    while (Vehicles.getInstance().goTo(40, -51, 0) && opModeIsActive()) {
+                        Vehicles.getInstance().goTo(40, -51, 0);
                         GunControl.getInstance().startShot();
                         GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
                         FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
                     }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2500 && opModeIsActive()) {
-                        TransferBall.getInstance().startBrush();
-                        GunControl.getInstance().startShot();
+                    while (countBall < 3 && opModeIsActive()) {
                         TransferBall.getInstance().startFlow();
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+                        TransferBall.getInstance().stopBrush();
+                        GunControl.getInstance().startShot();
+                        runtime.reset();
+                        if (GunControl.getInstance().getFlowGun() > 3) {
+                            countBall++;
+                            while (runtime.milliseconds() < 200) {}
+                        }
                     }
                     TransferBall.getInstance().stopBrush();
                     TransferBall.getInstance().stopFlow();
                     GunControl.getInstance().stopShot();
                     runtime.reset();
-                    while (runtime.milliseconds() < 1200 && opModeIsActive()) {
+                    while (Vehicles.getInstance().goTo(120, -55, 90) && opModeIsActive()) {
                         GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(87, -65, -90);
+                        Vehicles.getInstance().goTo(120, -55, 90);
                         FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
                     }
                     runtime.reset();
-                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-                        TransferBall.getInstance().startBrush();
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(-20, -65,-90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 500 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + 55, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(24, -90, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 1000 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + 55, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(-13, -90, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
+//                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
+//                        TransferBall.getInstance().startBrush();
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(-20, -65,-90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
 //                    runtime.reset();
+//                    while (runtime.milliseconds() < 500 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + 55, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(24, -90, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 1000 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + 55, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(-13, -90, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+////                    runtime.reset();
+////
+////                    TransferBall.getInstance().startBrush();
+////                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
+////                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+////                        Vehicles.getInstance().goTo(35, -51, 0);
+////                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+////                        GunControl.getInstance().startShot();
+////                    }
+////                    runtime.reset();
+////                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
+////                        Vehicles.getInstance().goTo(35, -51, 0);
+////                        GunControl.getInstance().startShot();
+////                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+////                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+////                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
+//                        Vehicles.getInstance().goTo(35, -51, 0);
+//                        GunControl.getInstance().startShot();
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2500 && opModeIsActive()) {
+//                        Vehicles.getInstance().goTo(35, -51, 0);
+//                        TransferBall.getInstance().startBrush();
+//                        GunControl.getInstance().startShot();
+//                        TransferBall.getInstance().startFlow();
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//                    TransferBall.getInstance().stopFlow();
+//                    GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + 55, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                    FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    GunControl.getInstance().stopShot();
+//
+//
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 1500 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(71, -130, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2200 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        TransferBall.getInstance().startBrush();
+//                        Vehicles.getInstance().goTo(-45, -130, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(35, -51, 0);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                        GunControl.getInstance().startShot();
+//                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2200 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        GunControl.getInstance().startShot();
+//                        TransferBall.getInstance().startFlow();
+//                        Vehicles.getInstance().goTo(35, -51, 0);
+//                        TransferBall.getInstance().startBrush();
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//                    TransferBall.getInstance().stopFlow();
+//                    GunControl.getInstance().stopShot();
+//
+//
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2100 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(58, -185, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 1200 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        TransferBall.getInstance().startBrush();
+//                        Vehicles.getInstance().goTo(-50, -185, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
 //
 //                    TransferBall.getInstance().startBrush();
-//                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2100 && opModeIsActive()) {
 //                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
 //                        Vehicles.getInstance().goTo(35, -51, 0);
-//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
 //                        GunControl.getInstance().startShot();
 //                    }
 //                    runtime.reset();
 //                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-//                        Vehicles.getInstance().goTo(35, -51, 0);
-//                        GunControl.getInstance().startShot();
 //                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        GunControl.getInstance().startShot();
+//                        Vehicles.getInstance().goTo(35, -51, 0);
+//                        TransferBall.getInstance().startFlow();
+//                        TransferBall.getInstance().startBrush();
 //                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
 //                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-                        Vehicles.getInstance().goTo(35, -51, 0);
-                        GunControl.getInstance().startShot();
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2500 && opModeIsActive()) {
-                        Vehicles.getInstance().goTo(35, -51, 0);
-                        TransferBall.getInstance().startBrush();
-                        GunControl.getInstance().startShot();
-                        TransferBall.getInstance().startFlow();
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    TransferBall.getInstance().stopFlow();
-                    GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw() + 55, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                    FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    GunControl.getInstance().stopShot();
-
-
-                    runtime.reset();
-                    while (runtime.milliseconds() < 1500 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(71, -130, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2200 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        TransferBall.getInstance().startBrush();
-                        Vehicles.getInstance().goTo(-45, -130, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(35, -51, 0);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                        GunControl.getInstance().startShot();
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2200 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        GunControl.getInstance().startShot();
-                        TransferBall.getInstance().startFlow();
-                        Vehicles.getInstance().goTo(35, -51, 0);
-                        TransferBall.getInstance().startBrush();
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    TransferBall.getInstance().stopFlow();
-                    GunControl.getInstance().stopShot();
-
-
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2100 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(58, -185, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 1200 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        TransferBall.getInstance().startBrush();
-                        Vehicles.getInstance().goTo(-50, -185, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-
-                    TransferBall.getInstance().startBrush();
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2100 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(35, -51, 0);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() + positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                        GunControl.getInstance().startShot();
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2000 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        GunControl.getInstance().startShot();
-                        Vehicles.getInstance().goTo(35, -51, 0);
-                        TransferBall.getInstance().startFlow();
-                        TransferBall.getInstance().startBrush();
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
-                    runtime.reset();
-                    while (runtime.milliseconds() < 2500 && opModeIsActive()) {
-                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
-                        Vehicles.getInstance().goTo(40, -62, -90);
-                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
-                    }
+//                    runtime.reset();
+//                    while (runtime.milliseconds() < 2500 && opModeIsActive()) {
+//                        GunControl.getInstance().setTowerDegree(OdometerPinpoint.getInstance().getYaw()  - 45, gunConfig.offsetGun, gunConfig.distanceToTarget);
+//                        Vehicles.getInstance().goTo(40, -62, -90);
+//                        FieldView.renderRobot(Vehicles.getInstance().getPositionOdometerX() - positionAutoRed.xSwap, Vehicles.getInstance().getPositionOdometerY() + positionAutoRed.ySwap, OdometerPinpoint.getInstance().getYaw() + positionAutoRed.yawSwap);
+//                    }
 
                 }
         }

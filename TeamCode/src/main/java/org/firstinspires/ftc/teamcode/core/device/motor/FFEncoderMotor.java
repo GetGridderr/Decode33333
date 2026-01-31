@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
 
 public class FFEncoderMotor extends Motor implements Encoder {
     private double spdMul = 0;
-    private Smoother smoother = new Smoother(1, 0);
+    private final Smoother smoother = new Smoother(1, 0);
 
     public FFEncoderMotor(String name) {
         super(name);

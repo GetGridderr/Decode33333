@@ -46,7 +46,7 @@ public class Motor extends Device implements Directional {
         SensorVoltage.getInstance().initialize(hardwareMap);
         device = hardwareMap.get(DcMotorEx.class, name);
 
-        setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
