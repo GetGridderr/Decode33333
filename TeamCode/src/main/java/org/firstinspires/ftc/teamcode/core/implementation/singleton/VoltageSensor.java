@@ -7,8 +7,8 @@ package org.firstinspires.ftc.teamcode.core.implementation.singleton;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.core.implementation.Motor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IDevice;
+import org.firstinspires.ftc.teamcode.core.trait.device.IMotor;
 
 
 /**
@@ -53,6 +53,6 @@ public final class VoltageSensor implements IDevice {
     }
 
     public double calculateCoefficientVoltage(double power) {
-        return Motor.normalizePower(power) * (desiredVoltage / getVoltage());
+        return IMotor.normalizePower(power) * (desiredVoltage / getVoltage());
     }
 }

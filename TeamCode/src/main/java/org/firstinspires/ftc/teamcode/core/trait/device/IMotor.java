@@ -21,4 +21,14 @@ public interface IMotor extends IDevice, IDirectional {
     void enable();
     void disable();
     boolean isEnabled();
+
+
+    /**
+     * Normalize the power value if it is outside the possible range.
+     */
+    static double normalizePower(double power) {
+        if (power > 1) return 1;
+        if (power < -1) return -1;
+        return power;
+    }
 }

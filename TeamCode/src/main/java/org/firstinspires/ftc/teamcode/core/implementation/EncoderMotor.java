@@ -1,5 +1,6 @@
 /**
- * @authors Arsen Berezin, Timophey Istomin
+ * @author Arsen Berezin
+ * @author Timofey Istomin
  */
 
 package org.firstinspires.ftc.teamcode.core.implementation;

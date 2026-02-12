@@ -82,7 +82,7 @@ public class Motor implements IMotor {
     @Override
     public void setPower(double power) {
         assert isInitialized();
-        device.setPower(normalizePower(power) * direction.getSign());
+        device.setPower(IMotor.normalizePower(power) * direction.getSign());
     }
 
     @Override
@@ -94,15 +94,5 @@ public class Motor implements IMotor {
     public void setDirection(Direction direction) {
         assert direction != null;
         this.direction = direction;
-    }
-
-
-    /**
-     * Normalize the power value if it is outside the possible range.
-     */
-    public static double normalizePower(double power) {
-        if (power > 1) return 1;
-        if (power < -1) return -1;
-        return power;
     }
 }
