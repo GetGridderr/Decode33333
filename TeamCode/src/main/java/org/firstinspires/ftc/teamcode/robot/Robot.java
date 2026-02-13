@@ -204,7 +204,7 @@ public final /* static data */ class Robot {
             xVelPID.update(getSpeedX(), xSpd),
             yVelPID.update(getSpeedY(), ySpd),
             yawVelPID.update(getSpeedYaw(), yawSpd),
-            WebConfig.normAuto
+            WebConfig.normTeleop
         );
     }
 
