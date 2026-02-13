@@ -78,7 +78,7 @@ public final /* static data */ class Robot {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(
                 GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
         pinpoint.setOffsets(110, 60, DistanceUnit.MM);
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
@@ -117,7 +117,7 @@ public final /* static data */ class Robot {
     }
 
     public static double getSpeedX() {  // swap x/y
-        return pinpoint.getVelY(DistanceUnit.CM);
+        return -pinpoint.getVelY(DistanceUnit.CM);
     }
 
     public static double getSpeedY() {  // swap x/y
@@ -129,7 +129,7 @@ public final /* static data */ class Robot {
     }
 
     public static double getX() {
-        return pos.getY(DistanceUnit.CM);
+        return -pos.getY(DistanceUnit.CM);
     }
 
     public static double getY() {
@@ -234,6 +234,8 @@ public final /* static data */ class Robot {
         double[] errVector = rotateVector(xErr, yErr, -getYaw());
         xErr = errVector[0];
         yErr = errVector[1];
+        FtcDashboard.getInstance().getTelemetry().addData("XErr", xErr);
+        FtcDashboard.getInstance().getTelemetry().addData("YErr", yErr);
         return setPowers(
                 xPosPID.update(-xErr, 0),
                 yPosPID.update(-yErr, 0),
