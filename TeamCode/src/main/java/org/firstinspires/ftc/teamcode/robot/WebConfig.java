@@ -9,7 +9,7 @@ public final /* static data */ class WebConfig {
     // auto pos pids
     public static double xP, xI, xD,
             yP, yI, yD,
-            yawP, yawI, yawD;
+            yawP = 0.009, yawI, yawD = 0.1;
     // teleop speed pidfs
     public static double vxP, vxI, vxD, vxF = 1,
             vyP, vyI, vyD, vyF = 1,

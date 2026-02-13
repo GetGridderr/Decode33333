@@ -22,11 +22,11 @@ import org.firstinspires.ftc.teamcode.core.implementation.Servo;
 import org.firstinspires.ftc.teamcode.core.trait.device.IEncoderMotor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IMotor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IServo;
+import org.firstinspires.ftc.teamcode.core.util.Constants;
 import org.firstinspires.ftc.teamcode.core.util.pid.PidfController;
 
 
 public final /* static data */ class Robot {
-
     // ----- DEVICES -----
     public static final IMotor rightFrontVehicleMotor = new Motor("right_front_vehicle_motor");
     public static final IMotor rightBackVehicleMotor = new Motor("right_back_vehicle_motor");
@@ -45,17 +45,17 @@ public final /* static data */ class Robot {
     public static GoBildaPinpointDriver pinpoint = null;
 
     // ----- DATA -----
-    public static Pose2D pos;
+    public static Pose2D pos = new Pose2D(DistanceUnit.CM, 0.0, 0.0, AngleUnit.DEGREES, 0);
 
     private static boolean initialized = false;
 
-    private final PidfController xPosPID = new PidfController(WebConfig.xP, WebConfig.xI, WebConfig.xD);
-    private final PidfController yPosPID = new PidfController(WebConfig.yP, WebConfig.yI, WebConfig.yD);
-    private final PidfController yawPosPID = new PidfController(WebConfig.yawP, WebConfig.yawI, WebConfig.yawD);
+    private static final PidfController xPosPID = new PidfController(WebConfig.xP, WebConfig.xI, WebConfig.xD);
+    private static final PidfController yPosPID = new PidfController(WebConfig.yP, WebConfig.yI, WebConfig.yD);
+    private static final PidfController yawPosPID = new PidfController(WebConfig.yawP, WebConfig.yawI, WebConfig.yawD);
 
-    private final PidfController xVelPID = new PidfController(WebConfig.vxP, WebConfig.vxI, WebConfig.vxD);
-    private final PidfController yVelPID = new PidfController(WebConfig.vyP, WebConfig.vyI, WebConfig.vyD);
-    private final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD);
+    private static final PidfController xVelPID = new PidfController(WebConfig.vxP, WebConfig.vxI, WebConfig.vxD,1);
+    private static final PidfController yVelPID = new PidfController(WebConfig.vyP, WebConfig.vyI, WebConfig.vyD, 1);
+    private static final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD, 1);
 
     public static void initialize(HardwareMap hardwareMap) {
         if (isInitialized()) return;
@@ -78,61 +78,71 @@ public final /* static data */ class Robot {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         pinpoint.setEncoderDirections(
                 GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+                GoBildaPinpointDriver.EncoderDirection.FORWARD);
         pinpoint.setOffsets(110, 60, DistanceUnit.MM);
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
+        pinpoint.setPosition(pos);
+
+        // configure movement motors directions
+        rightFrontVehicleMotor.invertDirection();
+        rightBackVehicleMotor.invertDirection();
 
         initialized = true;
     }
 
     // ----- UTILS -----
 
-    public double normalizeAngle(double angle) {
+    public static double normalizeAngle(double angle) {
         while (angle > 180) angle -= 360;
         while (angle < -180) angle += 360;
         return angle;
     }
 
-    public double getShortestPathToAngle(double currentAngle, double targetAngle) {
+    public static double getShortestPathToAngle(double currentAngle, double targetAngle) {
         double difference = targetAngle - currentAngle;
         return normalizeAngle(difference);
     }
 
+    public static double[] rotateVector(double x, double y, double rot) {
+        double cos = Math.cos(rot*Constants.RAD_PER_DEG), sin = Math.sin(rot*Constants.RAD_PER_DEG);
+        return new double[]{cos * x + sin * y, cos * y - sin * x};
+    }
+
     // ----- PINPOINT -----
 
-    public void updateOdometry() {
+    public static void updateOdometry() {
         pinpoint.update();
         pos = pinpoint.getPosition();
     }
 
-    public double getSpeedX() {
-        return pinpoint.getVelX(DistanceUnit.CM);
-    }
-
-    public double getSpeedY() {
+    public static double getSpeedX() {  // swap x/y
         return pinpoint.getVelY(DistanceUnit.CM);
     }
 
-    public double getSpeedYaw() {
-        return pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
+    public static double getSpeedY() {  // swap x/y
+        return pinpoint.getVelX(DistanceUnit.CM);
     }
 
-    public double getX() {
-        return pos.getX(DistanceUnit.CM);
+    public static double getSpeedYaw() {  // clockwise
+        return -pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
     }
 
-    public double getY() {
+    public static double getX() {
         return pos.getY(DistanceUnit.CM);
     }
 
-    public double getYaw() {
-        return pos.getHeading(AngleUnit.DEGREES);
+    public static double getY() {
+        return pos.getX(DistanceUnit.CM);
+    }
+
+    public static double getYaw() {
+        return -pos.getHeading(AngleUnit.DEGREES);
     }
 
     // ----- VEHICLES -----
 
-    public void setPIDsFromConfig() {
+    public static void setPIDsFromConfig() {
         xPosPID.kP = WebConfig.xP;
         xPosPID.kI = WebConfig.xI;
         xPosPID.kD = WebConfig.xD;
@@ -154,7 +164,7 @@ public final /* static data */ class Robot {
     }
 
     // true: motors are spinning; false: arrived
-    public boolean setPowers(double xPower,
+    public static boolean setPowers(double xPower,
                             double yPower,
                             double yawPower,
                             boolean normalize) {
@@ -163,6 +173,10 @@ public final /* static data */ class Robot {
         if (Math.abs(yawPower) < WebConfig.powerLim) yawPower = 0;
 
         if(yPower == 0 && xPower == 0 && yawPower == 0) {
+            leftFrontVehicleMotor.setPower(0);
+            leftBackVehicleMotor.setPower(0);
+            rightFrontVehicleMotor.setPower(0);
+            rightBackVehicleMotor.setPower(0);
             return false;
         }
 
@@ -197,15 +211,39 @@ public final /* static data */ class Robot {
         return true;
     }
 
-    public boolean setSpeed(double xSpd,
-                        double ySpd,
-                        double yawSpd) {
+    public static boolean setSpeed(double xSpd,
+                                   double ySpd,
+                                   double yawSpd) {
+        updateOdometry();
+        setPIDsFromConfig();
         return setPowers(
-            xVelPID.update(getSpeedX(), xSpd),
-            yVelPID.update(getSpeedY(), ySpd),
-            yawVelPID.update(getSpeedYaw(), yawSpd),
-            WebConfig.normTeleop
+                xVelPID.update(getSpeedX(), xSpd),
+                yVelPID.update(getSpeedY(), ySpd),
+                yawVelPID.update(getSpeedYaw(), yawSpd),
+                WebConfig.normTeleop
         );
+    }
+
+    public static boolean goTo(double xPos,
+                               double yPos,
+                               double yaw) {
+        updateOdometry();
+        setPIDsFromConfig();
+        double xErr = xPos - getX();
+        double yErr = yPos - getY();
+        double[] errVector = rotateVector(xErr, yErr, -getYaw());
+        xErr = errVector[0];
+        yErr = errVector[1];
+        return setPowers(
+                xPosPID.update(-xErr, 0),
+                yPosPID.update(-yErr, 0),
+                yawPosPID.update(getYaw(), yaw),
+                WebConfig.normAuto
+        );
+    }
+
+    public static void stopMoving() {
+        setPowers(0, 0, 0, false);
     }
 
     public static boolean isInitialized() {

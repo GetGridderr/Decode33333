@@ -36,9 +36,9 @@ public class PidfController {
         this.kD = kD;
     }
 
-    public PidfController(double kP, double kI, double kD, double target) {
+    public PidfController(double kP, double kI, double kD, double kF) {
         this(kP, kI, kD);
-        this.target = target;
+        this.kF = kF;
     }
 
     public double getTarget() {
@@ -62,7 +62,7 @@ public class PidfController {
 
         final double currentNanoTimeStamp = System.nanoTime();
         final double dT =
-                (currentNanoTimeStamp - lastNanoTimeStamp) * Constants.SECONDS_IN_NANOSECOND;
+                (currentNanoTimeStamp - lastNanoTimeStamp) * Constants.SECONDS_PER_NANOSECOND;
         lastNanoTimeStamp = currentNanoTimeStamp;
 
         final double derivative;
@@ -79,7 +79,7 @@ public class PidfController {
 
         lastInput = input;
 
-        return (kP * error) + integral + (kD * derivative) + (target * kF);
+        return kP * (error + integral + (kD * derivative)) + (target * kF);
     }
 
     public double update(double input) {
