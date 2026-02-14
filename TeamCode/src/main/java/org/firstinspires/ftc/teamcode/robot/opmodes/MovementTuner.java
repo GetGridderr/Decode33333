@@ -22,9 +22,9 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 )
 @Config
 public final class MovementTuner extends OpMode {
-    public static double xTarget1, xTarget2;
-    public static double yTarget1, yTarget2;
-    public static double yawTarget1, yawTarget2 = 90;
+    public static double xTarget;
+    public static double yTarget;
+    public static double yawTarget;
     @Override
     public void init() {
         Robot.initialize(hardwareMap);
@@ -34,9 +34,9 @@ public final class MovementTuner extends OpMode {
     public void loop() {
 
         if((System.nanoTime() * Constants.SECONDS_PER_NANOSECOND) % 4 >= 2) {
-            Robot.goTo(xTarget1, yTarget1, yawTarget1);
+            Robot.goTo(0, 0, 0);
         } else {
-            Robot.goTo(xTarget2, yTarget2, yawTarget2);
+            Robot.goTo(xTarget, yTarget, yawTarget);
         }
         FieldRenderer.renderRobot();
         FtcDashboard.getInstance().getTelemetry().addData("X", Robot.getX());
