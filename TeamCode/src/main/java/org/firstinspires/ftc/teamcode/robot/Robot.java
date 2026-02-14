@@ -58,7 +58,11 @@ public final /* static data */ class Robot {
     private static final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD, 1);
 
     public static void initialize(HardwareMap hardwareMap) {
-        if (isInitialized()) return;
+        if (isInitialized()) {
+            pos = new Pose2D(DistanceUnit.CM, 0.0, 0.0, AngleUnit.DEGREES, 0);
+            pinpoint.setPosition(pos);
+            return;
+        }
 
         rightFrontVehicleMotor.initialize(hardwareMap);
         rightBackVehicleMotor.initialize(hardwareMap);
@@ -89,6 +93,10 @@ public final /* static data */ class Robot {
         rightBackVehicleMotor.invertDirection();
 
         initialized = true;
+    }
+
+    public static boolean isInitialized() {
+        return initialized;
     }
 
     // ----- UTILS -----
@@ -239,16 +247,12 @@ public final /* static data */ class Robot {
         return setPowers(
                 xPosPID.update(-xErr, 0),
                 yPosPID.update(-yErr, 0),
-                yawPosPID.update(getYaw(), yaw),
+                yawPosPID.update(-getShortestPathToAngle(getYaw(), yaw), 0),
                 WebConfig.normAuto
         );
     }
 
     public static void stopMoving() {
         setPowers(0, 0, 0, false);
-    }
-
-    public static boolean isInitialized() {
-        return initialized;
     }
 }
