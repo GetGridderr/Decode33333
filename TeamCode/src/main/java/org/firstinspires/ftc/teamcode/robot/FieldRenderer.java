@@ -7,7 +7,7 @@ package org.firstinspires.ftc.teamcode.robot;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
-import org.firstinspires.ftc.teamcode.core.util.Constants;
+import org.firstinspires.ftc.teamcode.core.util.Util;
 
 
 public final class FieldRenderer {
@@ -17,11 +17,12 @@ public final class FieldRenderer {
     public static double halfWidth = robotWidth * 0.5;
     public static double halfLength = robotLength * 0.5;
 
+
     private static void rotatePoints(double[] xPoints, double[] yPoints, double angle) {
         for (int i = 0; i < xPoints.length; i++) {
             double x = xPoints[i];
             double y = yPoints[i];
-            double[] p = Robot.rotateVector(x, y, angle);
+            double[] p = Util.rotateVector(x, y, angle);
             xPoints[i] = p[0];
             yPoints[i] = p[1];
         }
@@ -36,7 +37,7 @@ public final class FieldRenderer {
 
     public static void renderRobot(double robotX, double robotY, double robotYaw) {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.fieldOverlay().setScale(Constants.INCHES_PER_CM, Constants.INCHES_PER_CM);
+        packet.fieldOverlay().setScale(Util.INCHES_PER_CM, Util.INCHES_PER_CM);
 
         double[] xPoints = new double[]{
                 +halfWidth,  // front right
@@ -50,13 +51,22 @@ public final class FieldRenderer {
                 +halfLength};  // front left
         rotatePoints(xPoints, yPoints, robotYaw);
         shiftPoints(xPoints, yPoints, robotX, robotY);
-        rotatePoints(xPoints, yPoints, 90);
+        rotatePoints(xPoints, yPoints, 90);  // x, y = y, -x
 
         packet.fieldOverlay().setFill("blue");
+        packet.fieldOverlay().setStrokeWidth(2);
         packet.fieldOverlay().fillPolygon(xPoints, yPoints);
         packet.fieldOverlay().strokeLine(xPoints[0], yPoints[0], xPoints[3], yPoints[3]);
+        packet.fieldOverlay().setFill("white");
+        packet.fieldOverlay().fillCircle(Robot.gunY, -Robot.gunX, 9.5);
+        packet.fieldOverlay().fillCircle(WebConfig.GoalY, WebConfig.GoalX, 5);
+        packet.fieldOverlay().fillCircle(WebConfig.GoalY, -WebConfig.GoalX, 5);
 
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
+        FtcDashboard.getInstance().getTelemetry().addData("X", Robot.getX());
+        FtcDashboard.getInstance().getTelemetry().addData("Y", Robot.getY());
+        FtcDashboard.getInstance().getTelemetry().addData("Yaw", Robot.getYaw());
+        FtcDashboard.getInstance().getTelemetry().update();
     }
 
     public static void renderRobot() {

@@ -10,6 +10,7 @@ package org.firstinspires.ftc.teamcode.robot;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -22,11 +23,27 @@ import org.firstinspires.ftc.teamcode.core.implementation.Servo;
 import org.firstinspires.ftc.teamcode.core.trait.device.IEncoderMotor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IMotor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IServo;
-import org.firstinspires.ftc.teamcode.core.util.Constants;
+import org.firstinspires.ftc.teamcode.core.util.Util;
+import org.firstinspires.ftc.teamcode.core.util.pid.PidfCoefficients;
 import org.firstinspires.ftc.teamcode.core.util.pid.PidfController;
 
 
 public final /* static data */ class Robot {
+    public enum TeamColor {
+        RED(1),
+        BLUE(-1);
+
+        private final int sign;
+
+        TeamColor(int sign) {
+            this.sign = sign;
+        }
+
+        public int getSign() {
+            return sign;
+        }
+    }
+
     // ----- DEVICES -----
     public static final IMotor rightFrontVehicleMotor = new Motor("right_front_vehicle_motor");
     public static final IMotor rightBackVehicleMotor = new Motor("right_back_vehicle_motor");
@@ -40,27 +57,45 @@ public final /* static data */ class Robot {
 
     public static final IServo gunAngleServo = new Servo("servo_angle_gun");
     public static final IServo towerTurnServo = new Servo("servo_turn_tower");
-    public static final IServo gunStopper = new Servo("servo_door");
+    public static final IServo gunDoor = new Servo("servo_door");
 
     public static GoBildaPinpointDriver pinpoint = null;
 
     // ----- DATA -----
     public static Pose2D pos = new Pose2D(DistanceUnit.CM, 0.0, 0.0, AngleUnit.DEGREES, 0);
+    public static double gunX, gunY;
+    // X Y HEADING
 
-    private static boolean initialized = false;
+    public static final double[] RED_FAR_INIT_POS = {-23, 169, 180};
+    public static final double[] RED_GOAL_INIT_POS = {-123, -131, -127};
+    public static final double[] RED_DISTANCE_FROM_GATES = {-32, -60, -122};
+    public static final double[] RED_BALLS1_PRE_POS = {-72, -24, -93};
+    public static final double[] RED_BALLS1_GOT_POS = {-141, -25, -94};
+    public static final double[] RED_BALLS2_PRE_POS = {-74, 37, -94};
+    public static final double[] RED_BALLS2_GOT_POS = {-161, 33, -92};
+    public static final double[] RED_BALLS3_PRE_POS = {-75, 94, -92};
+    public static final double[] RED_BALLS3_GOT_POS = {-162, 94, -92};
 
-    private static final PidfController xPosPID = new PidfController(WebConfig.xP, WebConfig.xI, WebConfig.xD);
-    private static final PidfController yPosPID = new PidfController(WebConfig.yP, WebConfig.yI, WebConfig.yD);
-    private static final PidfController yawPosPID = new PidfController(WebConfig.yawP, WebConfig.yawI, WebConfig.yawD);
+    public static final double[] RED_BALLS2_AFTER_POS = {-157, 53, -92};
+    public static final double[] RED_BALLS2_BACK_POS = {-83, 53, -92};
 
-    private static final PidfController xVelPID = new PidfController(WebConfig.vxP, WebConfig.vxI, WebConfig.vxD,1);
-    private static final PidfController yVelPID = new PidfController(WebConfig.vyP, WebConfig.vyI, WebConfig.vyD, 1);
-    private static final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD, 1);
+    public static boolean initialized = false;
+
+    public static TeamColor teamColor = TeamColor.RED;
+
+    public static final PidfController xPosPID = new PidfController(WebConfig.xP, WebConfig.xI, WebConfig.xD);
+    public static final PidfController yPosPID = new PidfController(WebConfig.yP, WebConfig.yI, WebConfig.yD);
+    public static final PidfController yawPosPID = new PidfController(WebConfig.yawP, WebConfig.yawI, WebConfig.yawD);
+
+    public static final PidfController xVelPID = new PidfController(WebConfig.vxP, WebConfig.vxI, WebConfig.vxD,1);
+    public static final PidfController yVelPID = new PidfController(WebConfig.vyP, WebConfig.vyI, WebConfig.vyD, 1);
+    public static final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD, 1);
+
+    public static VoltageSensor voltageSensor;
 
     public static void initialize(HardwareMap hardwareMap) {
         if (isInitialized()) {
-            pos = new Pose2D(DistanceUnit.CM, 0.0, 0.0, AngleUnit.DEGREES, 0);
-            pinpoint.setPosition(pos);
+            reset();
             return;
         }
 
@@ -73,10 +108,13 @@ public final /* static data */ class Robot {
         brushMotor.initialize(hardwareMap);
 
         gunMotor.initialize(hardwareMap);
+        gunMotor.invertDirection(); // Gun motors spin reversed by default
 
         gunAngleServo.initialize(hardwareMap);
         towerTurnServo.initialize(hardwareMap);
-        gunStopper.initialize(hardwareMap);
+        gunDoor.initialize(hardwareMap);
+
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -87,6 +125,7 @@ public final /* static data */ class Robot {
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
         pinpoint.setPosition(pos);
+        updateOdometry();
 
         // configure movement motors directions
         rightFrontVehicleMotor.invertDirection();
@@ -95,33 +134,65 @@ public final /* static data */ class Robot {
         initialized = true;
     }
 
+    public static double getVoltage() {
+        FtcDashboard.getInstance().getTelemetry().addData("Voltage", voltageSensor.getVoltage());
+        return voltageSensor.getVoltage();
+    }
+
+    public static double getVoltageCorrection() {
+        return RobotConfig.desiredVoltage / getVoltage();
+    }
+
     public static boolean isInitialized() {
         return initialized;
     }
 
-    // ----- UTILS -----
-
-    public static double normalizeAngle(double angle) {
-        while (angle > 180) angle -= 360;
-        while (angle < -180) angle += 360;
-        return angle;
+    public static double[] convertPosColor(double[] pos) {
+        return new double[] {
+                teamColor.getSign() * pos[0],
+                pos[1],
+                teamColor.getSign() * pos[2],
+        };
     }
 
-    public static double getShortestPathToAngle(double currentAngle, double targetAngle) {
-        double difference = targetAngle - currentAngle;
-        return normalizeAngle(difference);
+    public static void setInitPos() {
+        Robot.setPos(Robot.convertPosColor(Robot.RED_GOAL_INIT_POS));
     }
 
-    public static double[] rotateVector(double x, double y, double rot) {
-        double cos = Math.cos(rot*Constants.RAD_PER_DEG), sin = Math.sin(rot*Constants.RAD_PER_DEG);
-        return new double[]{cos * x + sin * y, cos * y - sin * x};
+    public static void setPos(double[] pos) {
+        setPos(pos[0], pos[1], pos[2]);
+    }
+
+    public static void setPos(double x, double y, double yaw) {
+        pos = new Pose2D(DistanceUnit.CM, y,  // swap x/y
+                -x,
+                AngleUnit.DEGREES,
+                -yaw);
+        pinpoint.setPosition(pos);
+        updateOdometry();
+    }
+
+    public static void reset() {
+        setPos(0, 0, 0);
     }
 
     // ----- PINPOINT -----
 
+    public static double[] getGunPos(double x, double y, double yaw) {
+        double gX = 0;
+        double gY = RobotConfig.gunOffset;
+        double[] gunPos = Util.rotateVector(gX, gY, getYaw());
+        gX = gunPos[0] + getX();
+        gY = gunPos[1] + getY();
+        return new double[]{gX, gY};
+    }
+
     public static void updateOdometry() {
         pinpoint.update();
         pos = pinpoint.getPosition();
+        double[] gunPos = getGunPos(getX(), getY(), getYaw());
+        gunX = gunPos[0];
+        gunY = gunPos[1];
     }
 
     public static double getSpeedX() {  // swap x/y
@@ -151,24 +222,36 @@ public final /* static data */ class Robot {
     // ----- VEHICLES -----
 
     public static void setPIDsFromConfig() {
-        xPosPID.kP = WebConfig.xP;
-        xPosPID.kI = WebConfig.xI;
-        xPosPID.kD = WebConfig.xD;
-        yPosPID.kP = WebConfig.yP;
-        yPosPID.kI = WebConfig.yI;
-        yPosPID.kD = WebConfig.yD;
-        yawPosPID.kP = WebConfig.yawP;
-        yawPosPID.kI = WebConfig.yawI;
-        yawPosPID.kD = WebConfig.yawD;
-        xVelPID.kP = WebConfig.vxP;
-        xVelPID.kI = WebConfig.vxI;
-        xVelPID.kD = WebConfig.vxD;
-        yVelPID.kP = WebConfig.vyP;
-        yVelPID.kI = WebConfig.vyI;
-        yVelPID.kD = WebConfig.vyD;
-        yawVelPID.kP = WebConfig.vyawP;
-        yawVelPID.kI = WebConfig.vyawI;
-        yawVelPID.kD = WebConfig.vyawD;
+        xPosPID.coefficients.kP = WebConfig.xP;
+        xPosPID.coefficients.kI = WebConfig.xI;
+        xPosPID.coefficients.kD = WebConfig.xD;
+
+        yPosPID.coefficients.kP = WebConfig.yP;
+        yPosPID.coefficients.kI = WebConfig.yI;
+        yPosPID.coefficients.kD = WebConfig.yD;
+
+        yawPosPID.coefficients.kP = WebConfig.yawP;
+        yawPosPID.coefficients.kI = WebConfig.yawI;
+        yawPosPID.coefficients.kD = WebConfig.yawD;
+
+        xVelPID.coefficients.kP = WebConfig.vxP;
+        xVelPID.coefficients.kI = WebConfig.vxI;
+        xVelPID.coefficients.kD = WebConfig.vxD;
+
+        yVelPID.coefficients.kP = WebConfig.vyP;
+        yVelPID.coefficients.kI = WebConfig.vyI;
+        yVelPID.coefficients.kD = WebConfig.vyD;
+
+        yawVelPID.coefficients.kP = WebConfig.vyawP;
+        yawVelPID.coefficients.kI = WebConfig.vyawI;
+        yawVelPID.coefficients.kD = WebConfig.vyawD;
+
+        gunMotor.setPidfCoefficients(
+                WebConfig.gP,
+                WebConfig.gI,
+                WebConfig.gD,
+                RobotConfig.gF
+        );
     }
 
     // true: motors are spinning; false: arrived
@@ -176,22 +259,26 @@ public final /* static data */ class Robot {
                             double yPower,
                             double yawPower,
                             boolean normalize) {
-        if (Math.abs(yPower) < WebConfig.powerLim) yPower = 0;
-        if (Math.abs(xPower) < WebConfig.powerLim) xPower = 0;
-        if (Math.abs(yawPower) < WebConfig.powerLim) yawPower = 0;
+        double frontLeftPower = yPower + xPower + yawPower;
+        double frontRightPower = yPower - xPower - yawPower;
+        double backLeftPower = yPower - xPower + yawPower;
+        double backRightPower = yPower + xPower - yawPower;
 
-        if(yPower == 0 && xPower == 0 && yawPower == 0) {
+        if (Math.abs(frontLeftPower) < WebConfig.powerLim) frontLeftPower = 0;
+        if (Math.abs(frontRightPower) < WebConfig.powerLim) frontRightPower = 0;
+        if (Math.abs(backLeftPower) < WebConfig.powerLim) backLeftPower = 0;
+        if (Math.abs(backRightPower) < WebConfig.powerLim) backRightPower = 0;
+
+        if(frontLeftPower == 0 &&
+                frontRightPower == 0 &&
+                backLeftPower == 0 &&
+                backRightPower == 0) {
             leftFrontVehicleMotor.setPower(0);
             leftBackVehicleMotor.setPower(0);
             rightFrontVehicleMotor.setPower(0);
             rightBackVehicleMotor.setPower(0);
             return false;
         }
-
-        double frontLeftPower = yPower + xPower + yawPower;
-        double frontRightPower = yPower - xPower - yawPower;
-        double backLeftPower = yPower - xPower + yawPower;
-        double backRightPower = yPower + xPower - yawPower;
 
         double maxSpd = Math.max(Math.max(
                 Math.abs(frontLeftPower), Math.abs(frontRightPower)
@@ -232,6 +319,10 @@ public final /* static data */ class Robot {
         );
     }
 
+    public static boolean goTo(double[] pos) {
+        return goTo(pos[0], pos[1], pos[2]);
+    }
+
     public static boolean goTo(double xPos,
                                double yPos,
                                double yaw) {
@@ -239,7 +330,7 @@ public final /* static data */ class Robot {
         setPIDsFromConfig();
         double xErr = xPos - getX();
         double yErr = yPos - getY();
-        double[] errVector = rotateVector(xErr, yErr, -getYaw());
+        double[] errVector = Util.rotateVector(xErr, yErr, -getYaw());
         xErr = errVector[0];
         yErr = errVector[1];
         FtcDashboard.getInstance().getTelemetry().addData("XErr", xErr);
@@ -247,12 +338,96 @@ public final /* static data */ class Robot {
         return setPowers(
                 xPosPID.update(-xErr, 0),
                 yPosPID.update(-yErr, 0),
-                yawPosPID.update(-getShortestPathToAngle(getYaw(), yaw), 0),
+                yawPosPID.update(-Util.getShortestPathToAngle(getYaw(), yaw), 0),
                 WebConfig.normAuto
         );
     }
 
     public static void stopMoving() {
         setPowers(0, 0, 0, false);
+    }
+
+    public static void startFlow() {
+        flowMotor.setPower(1);
+        brushMotor.setPower(1);
+    }
+
+    public static void stopFlow() {
+        flowMotor.setPower(0);
+        brushMotor.setPower(0);
+    }
+
+    public static void closeGunDoor() {
+        gunDoor.setPosition(WebConfig.doorClosed);  // найдено ценой 3 синяков
+        FtcDashboard.getInstance().getTelemetry().addData("Door open", false);
+    }
+
+    public static void openGunDoor() {
+        gunDoor.setPosition(WebConfig.doorOpen);
+        FtcDashboard.getInstance().getTelemetry().addData("Door open", true);
+    }
+
+    public static void setGunVelocity(double vel) {
+        if(gunMotor.getVelocity() < vel - 25) {
+            gunMotor.setPower(1);
+        } else {
+            gunMotor.setVelocity(vel);
+        }
+    }
+
+    public static void _turnTowerRaw(double angle) {
+        angle = 0.5 - angle / 540.0;
+        angle = Util.clamp(angle, 0, 1);
+        towerTurnServo.setPosition(angle);
+    }
+
+    public static boolean turnTower(double angle) {
+        angle = Util.normalizeAngle(angle+180);
+
+        double best = 0, dist, a;
+        double bestDist = Double.POSITIVE_INFINITY;
+
+        for(double k = -1; k <= 1; k+=1) {
+            a = angle + 360.0*k;
+
+            // This angle is supported
+            if(a >= RobotConfig.towerMin && a <= RobotConfig.towerMax) {
+                _turnTowerRaw(a);
+                return true;
+            }
+
+            if(a < RobotConfig.towerMin) {  // too low
+                dist = RobotConfig.towerMin - a;
+                a = RobotConfig.towerMin;
+            } else {  // too high
+                dist = a - RobotConfig.towerMax;
+                a = RobotConfig.towerMax;
+            }
+
+            if(bestDist > dist) {
+                bestDist = dist;
+                best = a;
+            }
+        }
+
+        _turnTowerRaw(best);
+        return false;
+    }
+
+    public static double angleToGoal(double x, double y, double yaw) {
+        double dx = WebConfig.GoalX * teamColor.sign - x;
+        double dy = WebConfig.GoalY - y;
+        double angle = Math.atan2(dx, dy) * Util.DEG_PER_RAD - yaw;
+        return Util.normalizeAngle(angle);
+    }
+
+    public static double angleToGoal() {
+        return angleToGoal(getX(), getY(), getYaw());
+    }
+
+    public static void setShootingAngle(double x) {
+        x = Util.clamp(x, 0, 1);
+        x = x * (RobotConfig.shootMax - RobotConfig.shootMin) + RobotConfig.shootMin;
+        gunAngleServo.setPosition(x);
     }
 }

@@ -8,7 +8,7 @@
 package org.firstinspires.ftc.teamcode.core.util.pid;
 
 
-import org.firstinspires.ftc.teamcode.core.util.Constants;
+import org.firstinspires.ftc.teamcode.core.util.Util;
 
 
 /**
@@ -20,25 +20,20 @@ public class PidfController {
     protected boolean first = true;
 
     protected double integral = 0;
-    protected double integralLimit = Double.POSITIVE_INFINITY;
+    protected double integralLimit = 0.5;
 
     protected double lastNanoTimeStamp = System.nanoTime();
 
-    public double kP = 0;
-    public double kD = 0;
-    public double kI = 0;
-    public double kF = 0;
+    public PidfCoefficients coefficients = new PidfCoefficients(0, 0, 0, 1);
 
 
     public PidfController(double kP, double kI, double kD) {
-        this.kP = kP;
-        this.kI = kI;
-        this.kD = kD;
+        coefficients = new PidfCoefficients(kP, kI, kD, 1);
     }
 
     public PidfController(double kP, double kI, double kD, double kF) {
         this(kP, kI, kD);
-        this.kF = kF;
+        coefficients.kF = kF;
     }
 
     public double getTarget() {
@@ -62,12 +57,12 @@ public class PidfController {
 
         final double currentNanoTimeStamp = System.nanoTime();
         final double dT =
-                (currentNanoTimeStamp - lastNanoTimeStamp) * Constants.SECONDS_PER_NANOSECOND;
+                (currentNanoTimeStamp - lastNanoTimeStamp) * Util.SECONDS_PER_NANOSECOND;
         lastNanoTimeStamp = currentNanoTimeStamp;
 
         final double derivative;
         if (!first) {
-            integral += error * kI * dT;
+            integral += error * coefficients.kI * dT;
             if (Math.abs(integral) > integralLimit) {
                 integral = integralLimit * Math.signum(integral);
             }
@@ -79,7 +74,8 @@ public class PidfController {
 
         lastInput = input;
 
-        return kP * (error + integral + (kD * derivative)) + (target * kF);
+        return (coefficients.kP * error) + integral + (coefficients.kD * derivative)
+                + (target * coefficients.kF);
     }
 
     public double update(double input) {

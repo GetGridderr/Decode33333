@@ -1,22 +1,23 @@
-package org.firstinspires.ftc.teamcode.robot.opmodes;
+package org.firstinspires.ftc.teamcode.robot.opmodes.match;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.core.util.exception.UnimplementedException;
+import org.firstinspires.ftc.teamcode.robot.Robot;
 
 
 /**
  * Autonomous-period program logic of the robot
  */
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(
-        name = "Autonomous",
+        name = "TeleOp",
         group = "Dev"
 )
-public final class Autonomous extends OpMode {
+public final class TeleOp extends OpMode {
     @Override
     public void init() {
-        throw new UnimplementedException();
+        Robot.initialize(hardwareMap);
     }
 
     @Override

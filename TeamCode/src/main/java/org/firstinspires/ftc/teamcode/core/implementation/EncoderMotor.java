@@ -11,6 +11,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.core.trait.device.IEncoderMotor;
 import org.firstinspires.ftc.teamcode.core.util.exception.UnimplementedException;
+import org.firstinspires.ftc.teamcode.core.util.pid.PidfCoefficients;
+import org.firstinspires.ftc.teamcode.core.util.pid.PidfController;
+import org.firstinspires.ftc.teamcode.robot.Robot;
+import org.firstinspires.ftc.teamcode.robot.RobotConfig;
+import org.firstinspires.ftc.teamcode.robot.WebConfig;
 
 
 /**
@@ -31,11 +36,17 @@ public class EncoderMotor extends Motor implements IEncoderMotor {
      *  and only inside {@link EncoderMotor#initialize(HardwareMap)} method
      */
     protected int encoderOffset;
+    protected PidfController velocityPidf;
 
 
     public EncoderMotor(String name) {
+        this(name, 0, 0, 0, 0);
+    }
+
+    public EncoderMotor(String name, double kP, double kI, double kD, double kF) {
         super(name);
         encoderOffset = 0;
+        velocityPidf = new PidfController(kP, kI, kD, kF);
     }
 
     @Override
@@ -51,11 +62,29 @@ public class EncoderMotor extends Motor implements IEncoderMotor {
          * and then multiply by direction
          */
         encoderOffset = device.getCurrentPosition();
+        resetEncoder();
     }
 
     @Override
-    public void setVelocity(double velocity) throws UnimplementedException {
-        throw new UnimplementedException();
+    public void setVelocity(double target) {
+        assert isInitialized();
+
+        double pwr = velocityPidf.update(getEncoderVelocity(), target);
+        if(target != 0) pwr += RobotConfig.gB;
+        if (Math.signum(pwr) != Math.signum(target)) pwr = 0;
+        setPower(pwr * Robot.getVoltageCorrection());
+    }
+
+    public void setPidfCoefficients(double kP, double kI, double kD, double kF) {
+        velocityPidf.coefficients.setAll(kP, kI, kD, kF);
+    }
+
+    public void setPidfCoefficients(PidfCoefficients coefficients) {
+        velocityPidf.coefficients = coefficients;
+    }
+
+    public PidfCoefficients getPidfCoefficients() {
+        return velocityPidf.coefficients;
     }
 
     @Override
@@ -67,7 +96,7 @@ public class EncoderMotor extends Motor implements IEncoderMotor {
     @Override
     public double getEncoderVelocity() {
         assert isInitialized();
-        return device.getVelocity() * direction.getSign();
+        return device.getVelocity();
     }
 
     @Override
