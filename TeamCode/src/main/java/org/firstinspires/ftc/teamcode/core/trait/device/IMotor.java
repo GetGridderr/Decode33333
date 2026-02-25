@@ -5,6 +5,7 @@
 package org.firstinspires.ftc.teamcode.core.trait.device;
 
 
+import org.firstinspires.ftc.teamcode.core.util.Util;
 
 /**
  * Interface describing motors.
@@ -27,8 +28,6 @@ public interface IMotor extends IDevice, IDirectional {
      * Normalize the power value if it is outside the possible range.
      */
     static double normalizePower(double power) {
-        if (power > 1) return 1;
-        if (power < -1) return -1;
-        return power;
+        return Util.clamp(power, -1, 1);
     }
 }

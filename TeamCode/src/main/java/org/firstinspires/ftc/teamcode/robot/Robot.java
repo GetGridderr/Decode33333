@@ -24,7 +24,6 @@ import org.firstinspires.ftc.teamcode.core.trait.device.IEncoderMotor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IMotor;
 import org.firstinspires.ftc.teamcode.core.trait.device.IServo;
 import org.firstinspires.ftc.teamcode.core.util.Util;
-import org.firstinspires.ftc.teamcode.core.util.pid.PidfCoefficients;
 import org.firstinspires.ftc.teamcode.core.util.pid.PidfController;
 
 
@@ -66,9 +65,14 @@ public final /* static data */ class Robot {
     public static double gunX, gunY;
     // X Y HEADING
 
+    public static final double[] RED_TELEOP_END_POS = {81, 98, 90};
+    public static final double[] RED_AUTONOMOUS_END_POS = {-103, -39, -133};
     public static final double[] RED_FAR_INIT_POS = {-23, 169, 180};
     public static final double[] RED_GOAL_INIT_POS = {-123, -131, -127};
     public static final double[] RED_DISTANCE_FROM_GATES = {-32, -60, -122};
+
+    public static final double[] RED_GATE_OPEN_POS = {-152, 20, -124};
+
     public static final double[] RED_BALLS1_PRE_POS = {-72, -24, -93};
     public static final double[] RED_BALLS1_GOT_POS = {-141, -25, -94};
     public static final double[] RED_BALLS2_PRE_POS = {-74, 37, -94};
@@ -92,6 +96,8 @@ public final /* static data */ class Robot {
     public static final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD, 1);
 
     public static VoltageSensor voltageSensor;
+    public static boolean flowOn = false;
+    public static boolean doorOpen = false;
 
     public static void initialize(HardwareMap hardwareMap) {
         if (isInitialized()) {
@@ -347,24 +353,37 @@ public final /* static data */ class Robot {
         setPowers(0, 0, 0, false);
     }
 
-    public static void startFlow() {
-        flowMotor.setPower(1);
+    public static void startBrush() {
         brushMotor.setPower(1);
     }
 
-    public static void stopFlow() {
-        flowMotor.setPower(0);
+    public static void stopBrush() {
         brushMotor.setPower(0);
     }
 
+    public static void startFlow() {
+        flowOn = true;
+        if(doorOpen) flowMotor.setPower(1);
+        else flowMotor.setPower(WebConfig.flowSpeedWithClosedDoor);
+    }
+
+    public static void stopFlow() {
+        flowOn = false;
+        flowMotor.setPower(0);
+    }
+
     public static void closeGunDoor() {
+        doorOpen = false;
         gunDoor.setPosition(WebConfig.doorClosed);  // найдено ценой 3 синяков
         FtcDashboard.getInstance().getTelemetry().addData("Door open", false);
+        if(flowOn) flowMotor.setPower(WebConfig.flowSpeedWithClosedDoor);
     }
 
     public static void openGunDoor() {
+        doorOpen = true;
         gunDoor.setPosition(WebConfig.doorOpen);
         FtcDashboard.getInstance().getTelemetry().addData("Door open", true);
+        if(flowOn) flowMotor.setPower(1);
     }
 
     public static void setGunVelocity(double vel) {
@@ -429,5 +448,11 @@ public final /* static data */ class Robot {
         x = Util.clamp(x, 0, 1);
         x = x * (RobotConfig.shootMax - RobotConfig.shootMin) + RobotConfig.shootMin;
         gunAngleServo.setPosition(x);
+    }
+
+    public static double normalizeStickPower(double input) {
+        return IMotor.normalizePower(
+                Math.pow(Math.abs(input), WebConfig.stickNormPowExponent)
+                * Math.signum(input));
     }
 }

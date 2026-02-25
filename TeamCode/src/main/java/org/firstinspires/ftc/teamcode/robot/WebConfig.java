@@ -21,8 +21,8 @@ public final /* static data */ class WebConfig {
     // normalization
     public static boolean normTeleop = false, normAuto = true;
     // pauses
-    public static double pauseEat = 2;
-    public static double pauseShoot = 2;
+    public static double pauseEat = 1.7; // prev = 2
+    public static double pauseShoot = 1.7; // prev = 2
     public static double pauseMoveLimit = 3;
     // Goal
     public static double GoalX = -160;
@@ -30,5 +30,11 @@ public final /* static data */ class WebConfig {
     // Gun
     public static double gunAngle = 0.3, gunVel = 950;
     // Door
-    public static double doorOpen = 0.68, doorClosed = 0.89;
+    public static double doorOpen = 0.68, doorClosed = 0.9; // prev closed = {0.89, 0.84}
+
+    // Gamepad stick normalization coefficients
+    public static double stickNormPowExponent = 1.414643504944718;
+    public static double stickNormYawKmul = 0.82;
+
+    public static double flowSpeedWithClosedDoor = 0.5;
 }

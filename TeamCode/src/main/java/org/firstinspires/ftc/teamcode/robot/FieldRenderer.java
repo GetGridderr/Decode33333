@@ -71,7 +71,7 @@ public final class FieldRenderer {
 
     public static void renderRobot() {
         renderRobot(
-            Robot.getX(),
+                Robot.getX(),
                 Robot.getY(),
                 Robot.getYaw()
         );

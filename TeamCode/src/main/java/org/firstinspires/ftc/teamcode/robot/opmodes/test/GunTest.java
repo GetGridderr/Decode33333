@@ -22,8 +22,8 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 )
 @Config
 public final class GunTest extends OpMode {
-    public static double gunSpeed;
-    public static double gunAngle;
+    public static double gunSpeed = 900;
+    public static double gunAngle = 0.3;
     public static double doorValue;
     // 0.3 900
     // from shooting pos
@@ -47,14 +47,16 @@ public final class GunTest extends OpMode {
         Robot.updateOdometry();
 
         if (work) {
-//            Robot.startFlow();
-//            Robot.turnTower(Robot.angleToGoal());
-//            Robot.goTo(Robot.RED_DISTANCE_FROM_GATES);
-//            Robot.setGunVelocity(gunSpeed);
-//            Robot.setShootingAngle(gunAngle);
-            Robot.gunDoor.setPosition(doorValue);
+            Robot.startFlow();
+            Robot.startBrush();
+            Robot.turnTower(Robot.angleToGoal());
+            Robot.goTo(Robot.RED_DISTANCE_FROM_GATES);
+            Robot.setGunVelocity(gunSpeed);
+            Robot.setShootingAngle(gunAngle);
+//            Robot.gunDoor.setPosition(doorValue);
         } else {
             Robot.stopFlow();
+            Robot.stopBrush();
             Robot.setGunVelocity(0);
         }
 

@@ -38,7 +38,7 @@ public final class MovementTuner extends OpMode {
 
     @Override
     public void init_loop() {
-        Robot.setPos(Robot.RED_GOAL_INIT_POS);
+        Robot.setInitPos();
     }
 
     public static void goTo(double xPos,

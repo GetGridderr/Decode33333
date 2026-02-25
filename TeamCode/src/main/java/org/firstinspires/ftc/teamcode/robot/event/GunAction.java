@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.robot.WebConfig;
 public class GunAction implements RobotAction {
     public boolean rotate = true;
     boolean followTarget = false;
+    boolean shouldShoot = true;
     double x, y, yaw;
 
     public GunAction() {}
@@ -26,6 +27,10 @@ public class GunAction implements RobotAction {
         followTarget = false;
     }
 
+    public void setShouldShoot(boolean should) {
+        shouldShoot = should;
+    }
+
     @Override
     public void update() {
         if(rotate) {
@@ -36,7 +41,7 @@ public class GunAction implements RobotAction {
             }
         }
         Robot.setShootingAngle(WebConfig.gunAngle);
-        Robot.setGunVelocity(WebConfig.gunVel);
+        if (shouldShoot) Robot.setGunVelocity(WebConfig.gunVel);
     }
 
     @Override
