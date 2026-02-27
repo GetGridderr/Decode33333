@@ -8,7 +8,8 @@ public class RobotConfig {
     public static double desiredVoltage = 13.0;
     public static double towerMin = -190, towerMax = 120;
     public static double gunOffset = -1.75;
-    public static double xOdometerOffset = 51.5, yOdometerOffset = 99.5;
+//    public static double xOdometerOffset = 51.5, yOdometerOffset = 99.5;
+    public static double xOdometerOffset = 60, yOdometerOffset = 110;
     // 60 110
 
     public static double shootMin = 0.1;

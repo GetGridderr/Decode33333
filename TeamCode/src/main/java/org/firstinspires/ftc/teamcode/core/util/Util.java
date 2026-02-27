@@ -30,4 +30,9 @@ public final class Util {
         return x;
     }
 
+    public static double interp(double xMax, double xMin, double x, double yMax, double yMin) {
+        double t = (x - xMin) / (xMax - xMin);
+        t = clamp(t, 0, 1);
+        return yMin + (yMax - yMin) * t;
+    }
 }

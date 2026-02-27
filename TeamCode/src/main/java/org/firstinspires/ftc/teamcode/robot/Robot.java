@@ -120,7 +120,6 @@ public final /* static data */ class Robot {
     public static final PidfController yawVelPID = new PidfController(WebConfig.vyawP, WebConfig.vyawI, WebConfig.vyawD, 1);
 
     public static VoltageSensor voltageSensor;
-    public static boolean flowOn = false;
     public static boolean doorOpen = false;
 
     public static void initialize(HardwareMap hardwareMap) {
@@ -213,10 +212,10 @@ public final /* static data */ class Robot {
     public static double[] getGunPos(double x, double y, double yaw) {
         double gX = 0;
         double gY = RobotConfig.gunOffset;
-        double[] gunPos = Util.rotateVector(gX, gY, getYaw());
-        gX = gunPos[0] + getX();
-        gY = gunPos[1] + getY();
-        return new double[]{gX, gY};
+        double[] gunPos = Util.rotateVector(gX, gY, yaw);
+        gX = gunPos[0];
+        gY = gunPos[1];
+        return new double[]{gX + x, gY + y};
     }
 
     public static void updateOdometry() {
@@ -269,14 +268,17 @@ public final /* static data */ class Robot {
         xVelPID.coefficients.kP = WebConfig.vxP;
         xVelPID.coefficients.kI = WebConfig.vxI;
         xVelPID.coefficients.kD = WebConfig.vxD;
+        xVelPID.coefficients.kF = 1.0 / WebConfig.vxMax;
 
         yVelPID.coefficients.kP = WebConfig.vyP;
         yVelPID.coefficients.kI = WebConfig.vyI;
         yVelPID.coefficients.kD = WebConfig.vyD;
+        yVelPID.coefficients.kF = 1.0 / WebConfig.vyMax;
 
         yawVelPID.coefficients.kP = WebConfig.vyawP;
         yawVelPID.coefficients.kI = WebConfig.vyawI;
         yawVelPID.coefficients.kD = WebConfig.vyawD;
+        yawVelPID.coefficients.kF = 1.0 / WebConfig.vYawMax;
 
         gunMotor.setPidfCoefficients(
                 WebConfig.gP,
@@ -341,11 +343,13 @@ public final /* static data */ class Robot {
     public static boolean setSpeed(double xSpd,
                                    double ySpd,
                                    double yawSpd) {
+        // to local coordinate system
+        double[] currentSpeeds = Util.rotateVector(getSpeedX(), getSpeedY(), -getYaw());
         updateOdometry();
         setPIDsFromConfig();
         return setPowers(
-                xVelPID.update(getSpeedX(), xSpd),
-                yVelPID.update(getSpeedY(), ySpd),
+                xVelPID.update(currentSpeeds[0], xSpd),
+                yVelPID.update(currentSpeeds[1], ySpd),
                 yawVelPID.update(getSpeedYaw(), yawSpd),
                 WebConfig.normTeleop
         );
@@ -387,29 +391,20 @@ public final /* static data */ class Robot {
         brushMotor.setPower(0);
     }
 
-    public static void startFlow() {
-        flowOn = true;
-        if(doorOpen) flowMotor.setPower(1);
-        else flowMotor.setPower(WebConfig.flowSpeedWithClosedDoor);
-    }
-
     public static void stopFlow() {
-        flowOn = false;
         flowMotor.setPower(0);
     }
 
     public static void closeGunDoor() {
         doorOpen = false;
-        gunDoor.setPosition(WebConfig.doorClosed);  // найдено ценой 3 синяков
+        gunDoor.setPosition(WebConfig.doorClosed);  // найдено ценой 3 хэдшотов
         FtcDashboard.getInstance().getTelemetry().addData("Door open", false);
-        if(flowOn) flowMotor.setPower(WebConfig.flowSpeedWithClosedDoor);
     }
 
     public static void openGunDoor() {
         doorOpen = true;
         gunDoor.setPosition(WebConfig.doorOpen);
         FtcDashboard.getInstance().getTelemetry().addData("Door open", true);
-        if(flowOn) flowMotor.setPower(1);
     }
 
     public static void setGunVelocity(double vel) {
@@ -470,10 +465,24 @@ public final /* static data */ class Robot {
         return angleToGoal(gunX, gunY, getYaw());
     }
 
+    public static double distanceToGoal(double x, double y) {
+        double dx = WebConfig.GoalX * teamColor.sign - x;
+        double dy = WebConfig.GoalY - y;
+        return Math.sqrt((dx*dx) + (dy*dy));
+    }
+
+    public static double distanceToGoal() {
+        return distanceToGoal(gunX, gunY);
+    }
+
     public static void setShootingAngle(double x) {
         x = Util.clamp(x, 0, 1);
         x = x * (RobotConfig.shootMax - RobotConfig.shootMin) + RobotConfig.shootMin;
         gunAngleServo.setPosition(x);
+    }
+
+    public static double[] rotateSticks(double x, double y) {
+        return Util.rotateVector(x, y, (90 * teamColor.getSign())-Robot.getYaw());
     }
 
     public static double normalizeStickPower(double input) {

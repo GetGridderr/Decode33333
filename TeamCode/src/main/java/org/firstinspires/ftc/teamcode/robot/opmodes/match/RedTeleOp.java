@@ -4,11 +4,16 @@ package org.firstinspires.ftc.teamcode.robot.opmodes.match;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.core.trait.event.RobotAction;
+import org.firstinspires.ftc.teamcode.core.trait.event.WaitAction;
 import org.firstinspires.ftc.teamcode.robot.FieldRenderer;
 import org.firstinspires.ftc.teamcode.robot.Robot;
+import org.firstinspires.ftc.teamcode.robot.RobotConfig;
 import org.firstinspires.ftc.teamcode.robot.WebConfig;
+import org.firstinspires.ftc.teamcode.robot.event.FlowAction;
 import org.firstinspires.ftc.teamcode.robot.event.GunAction;
 import org.firstinspires.ftc.teamcode.robot.event.MoveAction;
+import org.firstinspires.ftc.teamcode.robot.event.TeleopMovementAction;
 
 
 /**
@@ -23,6 +28,8 @@ public class RedTeleOp extends OpMode {
     private MoveAction endPosMoveAction;
     private boolean flowEnabled = false;
     private boolean brushEnabled = false;
+    private FlowAction flowAction = new FlowAction(false);
+    public TeleopMovementAction moveAction = new TeleopMovementAction(gamepad1);
 
 
     protected void setTeamSign() {
@@ -41,6 +48,7 @@ public class RedTeleOp extends OpMode {
         initActions();
         Robot.setPIDsFromConfig();
         Robot.updateOdometry();
+        moveAction.gamepad1 = gamepad1;
     }
 
     @Override
@@ -53,22 +61,20 @@ public class RedTeleOp extends OpMode {
     @Override
     public void loop() {
         Robot.updateOdometry();
-        gunAction.update();
+//        gunAction.update();
 
 //        double stickX = gamepad1.left_stick_x;
 //        double stickY = -gamepad1.left_stick_y;
 //        double stickYaw = gamepad1.right_stick_x;
 
-        // Normalize stick values
-        double stickX = Robot.normalizeStickPower(gamepad1.left_stick_x);
-        double stickY = Robot.normalizeStickPower(-gamepad1.left_stick_y);
-        double stickYaw =
-                Robot.normalizeStickPower(gamepad1.right_stick_x)
-                * WebConfig.stickNormYawKmul;
+        RobotAction sleep = new WaitAction(0.05);
+        while (!sleep.isFinished()) {
+            sleep.update();
+        }
 
         // Enable flow
         if (gamepad1.squareWasPressed()) flowEnabled = !flowEnabled;
-        if (flowEnabled) Robot.startFlow();
+        if (flowEnabled) flowAction.startFlow();
         else Robot.stopFlow();
 
         // Enable only brush
@@ -84,22 +90,9 @@ public class RedTeleOp extends OpMode {
             Robot.closeGunDoor();
         }
 
-        // Move robot to the final square stop place
-        if (gamepad1.left_stick_button && gamepad1.right_stick_button) {
-            endPosMoveAction.update();
-        }
-        // Else move by gamepad
-        else Robot.setPowers(stickX,
-                stickY,
-                stickYaw,
-                false);
-
-        FtcDashboard.getInstance().getTelemetry().addData("Gamepad lX", gamepad1.left_stick_x);
-        FtcDashboard.getInstance().getTelemetry().addData("Gamepad lY", -gamepad1.left_stick_y);
-        FtcDashboard.getInstance().getTelemetry().addData("Gamepad rX", gamepad1.right_stick_x);
-        FtcDashboard.getInstance().getTelemetry().addData("Normalized lX", stickX);
-        FtcDashboard.getInstance().getTelemetry().addData("Normalized lY", stickY);
-        FtcDashboard.getInstance().getTelemetry().addData("Normalized rX", stickYaw);
+        moveAction.update();
+        FtcDashboard.getInstance().getTelemetry().addData("Speed Yaw", Robot.getSpeedYaw());
+        FtcDashboard.getInstance().getTelemetry().addData("Flow speed", Robot.flowMotor.getPower());
 
         FieldRenderer.renderRobot();
         FtcDashboard.getInstance().getTelemetry().update();

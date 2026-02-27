@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.core.trait.event.RobotAction;
 import org.firstinspires.ftc.teamcode.core.trait.event.SequenceAction;
 import org.firstinspires.ftc.teamcode.core.trait.event.WaitAction;
 import org.firstinspires.ftc.teamcode.robot.FieldRenderer;
+import org.firstinspires.ftc.teamcode.robot.event.FlowAction;
 import org.firstinspires.ftc.teamcode.robot.event.GunAction;
 import org.firstinspires.ftc.teamcode.robot.event.MoveAction;
 import org.firstinspires.ftc.teamcode.robot.event.TimedMoveAction;
@@ -35,19 +36,20 @@ public class RedAutonomous extends OpMode {
 
     private void initActions() {
         GunAction gunAction = new GunAction();
+        FlowAction flowAction = new FlowAction(true);
         RobotAction movementSeq = new SequenceAction(
                 new SingleAction(() -> {
                     gunAction.rotate = true;
-                    gunAction.setTarget(Robot.RED_DISTANCE_FROM_GATES);
+                    gunAction.setTarget(Robot.RED_SHOOT_SHORT);
                 }),
                 new WaitAction(1.5),
-                new MoveAction(Robot.RED_DISTANCE_FROM_GATES),
+                new MoveAction(Robot.RED_SHOOT_SHORT),
                 new SingleAction(gunAction::unsetTarget),
 
                 new SingleAction(Robot::openGunDoor),
                 // if we start flow immediately, gun wont have time to accelerate
 
-                new TimedMoveAction(Robot.RED_DISTANCE_FROM_GATES, WebConfig.pauseShoot),
+                new TimedMoveAction(Robot.RED_SHOOT_SHORT, WebConfig.pauseShoot),
                 new SingleAction(Robot::closeGunDoor),
 
                 new SingleAction(() -> gunAction.rotate = false),
@@ -56,12 +58,12 @@ public class RedAutonomous extends OpMode {
                 new MoveAction(Robot.RED_BALLS1_PRE_POS),
                 new SingleAction(() -> {
                     gunAction.rotate = true;
-                    gunAction.setTarget(Robot.RED_DISTANCE_FROM_GATES);
+                    gunAction.setTarget(Robot.RED_SHOOT_SHORT);
                 }),
-                new MoveAction(Robot.RED_DISTANCE_FROM_GATES),
+                new MoveAction(Robot.RED_SHOOT_SHORT),
                 new SingleAction(gunAction::unsetTarget),
                 new SingleAction(Robot::openGunDoor),
-                new TimedMoveAction(Robot.RED_DISTANCE_FROM_GATES, WebConfig.pauseShoot),
+                new TimedMoveAction(Robot.RED_SHOOT_SHORT, WebConfig.pauseShoot),
                 new SingleAction(Robot::closeGunDoor),
 
                 new SingleAction(() -> gunAction.rotate = false),
@@ -72,12 +74,12 @@ public class RedAutonomous extends OpMode {
                 new MoveAction(Robot.RED_BALLS2_GOT_POS),
                 new SingleAction(() -> {
                     gunAction.rotate = true;
-                    gunAction.setTarget(Robot.RED_DISTANCE_FROM_GATES);
+                    gunAction.setTarget(Robot.RED_SHOOT_SHORT);
                 }),
-                new MoveAction(Robot.RED_DISTANCE_FROM_GATES),
+                new MoveAction(Robot.RED_SHOOT_SHORT),
                 new SingleAction(gunAction::unsetTarget),
                 new SingleAction(Robot::openGunDoor),
-                new TimedMoveAction(Robot.RED_DISTANCE_FROM_GATES, WebConfig.pauseShoot),
+                new TimedMoveAction(Robot.RED_SHOOT_SHORT, WebConfig.pauseShoot),
                 new SingleAction(Robot::closeGunDoor),
 
                 new SingleAction(() -> gunAction.rotate = false),
@@ -85,23 +87,22 @@ public class RedAutonomous extends OpMode {
                 new TimedMoveAction(Robot.RED_BALLS3_GOT_POS, WebConfig.pauseEat),
                 new SingleAction(() -> {
                     gunAction.rotate = true;
-                    gunAction.setTarget(Robot.RED_DISTANCE_FROM_GATES);
+                    gunAction.setTarget(Robot.RED_SHOOT_SHORT);
                 }),
-                new MoveAction(Robot.RED_DISTANCE_FROM_GATES),
+                new MoveAction(Robot.RED_SHOOT_SHORT),
                 new SingleAction(gunAction::unsetTarget),
                 new SingleAction(Robot::openGunDoor),
-                new TimedMoveAction(Robot.RED_DISTANCE_FROM_GATES, WebConfig.pauseShoot),
+                new TimedMoveAction(Robot.RED_SHOOT_SHORT, WebConfig.pauseShoot),
                 new SingleAction(Robot::closeGunDoor),
 
                 new SingleAction(() -> gunAction.rotate = false),
                 new TimedMoveAction(Robot.RED_AUTONOMOUS_END_POS, 3)
         );
         RobotAction parallelMain = new ParallelAction(Arrays.asList(
-                gunAction, movementSeq), ParallelAction.FinishMode.ANY);
+                gunAction, movementSeq, flowAction), ParallelAction.FinishMode.ANY);
         actions = new SequenceAction(
                 // This action may stop balls inside the flow
                 new SingleAction(Robot::closeGunDoor),
-                new SingleAction(Robot::startFlow),
                 new SingleAction(Robot::startBrush),
                 parallelMain,
                 new SingleAction(Robot::stopFlow),
