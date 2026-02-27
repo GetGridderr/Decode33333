@@ -40,7 +40,7 @@ public class RedAutonomous extends OpMode {
                     gunAction.rotate = true;
                     gunAction.setTarget(Robot.RED_DISTANCE_FROM_GATES);
                 }),
-                new WaitAction(1),
+                new WaitAction(1.5),
                 new MoveAction(Robot.RED_DISTANCE_FROM_GATES),
                 new SingleAction(gunAction::unsetTarget),
 
@@ -67,8 +67,9 @@ public class RedAutonomous extends OpMode {
                 new SingleAction(() -> gunAction.rotate = false),
                 new MoveAction(Robot.RED_BALLS2_PRE_POS),
                 new TimedMoveAction(Robot.RED_BALLS2_GOT_POS, WebConfig.pauseEat),
-                new MoveAction(Robot.RED_BALLS2_AFTER_POS),
-                new MoveAction(Robot.RED_BALLS2_BACK_POS),
+//                new MoveAction(Robot.RED_BALLS2_AFTER_POS),
+//                new MoveAction(Robot.RED_BALLS2_BACK_POS),
+                new MoveAction(Robot.RED_BALLS2_GOT_POS),
                 new SingleAction(() -> {
                     gunAction.rotate = true;
                     gunAction.setTarget(Robot.RED_DISTANCE_FROM_GATES);

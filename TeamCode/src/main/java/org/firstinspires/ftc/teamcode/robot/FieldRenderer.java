@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.core.util.Util;
 
 
 public final class FieldRenderer {
-    public static double robotWidth = 45.0;
-    public static double robotLength = 45.0;
+    public static double robotWidth = 37.4;
+    public static double robotLength = 37.1;
 
     public static double halfWidth = robotWidth * 0.5;
     public static double halfLength = robotLength * 0.5;

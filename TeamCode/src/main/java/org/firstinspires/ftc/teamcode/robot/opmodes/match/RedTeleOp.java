@@ -74,7 +74,7 @@ public class RedTeleOp extends OpMode {
         // Enable only brush
         if (gamepad1.circleWasPressed()) flowEnabled = !flowEnabled;
         if (flowEnabled) Robot.startBrush();
-        else Robot.stopFlow();
+        else Robot.startBrush();
 
 
         // Keep opened gun door while button is pressed

@@ -127,7 +127,9 @@ public final /* static data */ class Robot {
         pinpoint.setEncoderDirections(
                 GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        pinpoint.setOffsets(110, 60, DistanceUnit.MM);
+        pinpoint.setOffsets(RobotConfig.yOdometerOffset,
+                RobotConfig.xOdometerOffset,
+                DistanceUnit.MM);
         pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
         pinpoint.setPosition(pos);
