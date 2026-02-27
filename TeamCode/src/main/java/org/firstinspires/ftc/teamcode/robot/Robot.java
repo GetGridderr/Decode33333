@@ -64,12 +64,17 @@ public final /* static data */ class Robot {
     public static Pose2D pos = new Pose2D(DistanceUnit.CM, 0.0, 0.0, AngleUnit.DEGREES, 0);
     public static double gunX, gunY;
     // X Y HEADING
+    // CORNER -164.3 164.45 180
 
-    public static final double[] RED_TELEOP_END_POS = {81, 98, 90};
+    // NEW
+    public static final double[] RED_CORNER = {-164.3, 164.45, 180};
+    public static final double[] RED_TELEOP_END_POS = {85, 100, 180};
+    public static final double[] RED_GOAL_INIT_POS = {-122, -123, 180};
+    public static final double[] RED_SHOOT_SHORT = {-75, -93, 180};
+    public static final double[] RED_SHOOT_LONG = {-31, 150, 180};
+
     public static final double[] RED_AUTONOMOUS_END_POS = {-103, -39, -133};
     public static final double[] RED_FAR_INIT_POS = {-23, 169, 180};
-    public static final double[] RED_GOAL_INIT_POS = {-123, -131, -127};
-    public static final double[] RED_DISTANCE_FROM_GATES = {-32, -60, -122};
 
     public static final double[] RED_GATE_OPEN_POS = {-152, 20, -124};
 
@@ -82,6 +87,25 @@ public final /* static data */ class Robot {
 
     public static final double[] RED_BALLS2_AFTER_POS = {-157, 53, -92};
     public static final double[] RED_BALLS2_BACK_POS = {-83, 53, -92};
+
+    // OLD
+//    public static final double[] RED_TELEOP_END_POS = {81, 98, 90};
+//    public static final double[] RED_AUTONOMOUS_END_POS = {-103, -39, -133};
+//    public static final double[] RED_FAR_INIT_POS = {-23, 169, 180};
+//    public static final double[] RED_GOAL_INIT_POS = {-123, -131, -127};
+//    public static final double[] RED_SHOOT_SHORT = {-32, -60, -122};
+//
+//    public static final double[] RED_GATE_OPEN_POS = {-152, 20, -124};
+//
+//    public static final double[] RED_BALLS1_PRE_POS = {-72, -24, -93};
+//    public static final double[] RED_BALLS1_GOT_POS = {-141, -25, -94};
+//    public static final double[] RED_BALLS2_PRE_POS = {-74, 37, -94};
+//    public static final double[] RED_BALLS2_GOT_POS = {-161, 33, -92};
+//    public static final double[] RED_BALLS3_PRE_POS = {-75, 94, -92};
+//    public static final double[] RED_BALLS3_GOT_POS = {-162, 94, -92};
+//
+//    public static final double[] RED_BALLS2_AFTER_POS = {-157, 53, -92};
+//    public static final double[] RED_BALLS2_BACK_POS = {-83, 53, -92};
 
     public static boolean initialized = false;
 
@@ -443,7 +467,7 @@ public final /* static data */ class Robot {
     }
 
     public static double angleToGoal() {
-        return angleToGoal(getX(), getY(), getYaw());
+        return angleToGoal(gunX, gunY, getYaw());
     }
 
     public static void setShootingAngle(double x) {

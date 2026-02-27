@@ -14,8 +14,9 @@ public class GunAction implements RobotAction {
 
     public void setTarget(double x, double y, double yaw) {
         followTarget = true;
-        this.x = x;
-        this.y = y;
+        double[] gunPos = Robot.getGunPos(x, y, yaw);
+        this.x = gunPos[0];
+        this.y = gunPos[1];
         this.yaw = yaw;
     }
 
