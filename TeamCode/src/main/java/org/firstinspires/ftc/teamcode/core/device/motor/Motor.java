@@ -1,19 +1,17 @@
 package org.firstinspires.ftc.teamcode.core.device.motor;
 
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.core.device.Device;
 import org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage;
 import org.firstinspires.ftc.teamcode.core.device.trait.Directional;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDCoefficients;
-import org.firstinspires.ftc.teamcode.core.util.pid.PIDController;
 import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
-
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 
 public class Motor extends Device implements Directional {
@@ -48,8 +46,9 @@ public class Motor extends Device implements Directional {
         SensorVoltage.getInstance().initialize(hardwareMap);
         device = hardwareMap.get(DcMotorEx.class, name);
 
-        setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-        device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        device.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        device.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class Motor extends Device implements Directional {
         return device.getZeroPowerBehavior();
     }
 
-    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
+    public void setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior behavior) {
         device.setZeroPowerBehavior(behavior);
     }
 
@@ -173,6 +172,9 @@ public class Motor extends Device implements Directional {
         pidController.setCoefficients(kP, kI, kD);
     }
 
+    public void setPIDCoefficients(PIDCoefficients pidCoefficients) {
+        pidController.setCoefficients(pidCoefficients);
+    }
 
     public static double normalizePower(double power) {
         if (power < -1) return -1;

@@ -1,16 +1,14 @@
 package org.firstinspires.ftc.teamcode.core.device.sensor;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.core.device.Device;
 
 // coding by Matvey Ivanovv
 
 public class SensorVoltage extends Device {
-    private static final org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage INSTANCE = new org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage();
+    private static final SensorVoltage INSTANCE = new SensorVoltage();
     protected VoltageSensor voltageSensor;
     private double powerInput;
     private double powerOutput;
@@ -21,7 +19,7 @@ public class SensorVoltage extends Device {
         voltageSensor = null;
     }
 
-    public static org.firstinspires.ftc.teamcode.core.device.sensor.SensorVoltage getInstance() { return INSTANCE; }
+    public static SensorVoltage getInstance() { return INSTANCE; }
 
     @Override
     public void initialize(HardwareMap hardwareMap) {

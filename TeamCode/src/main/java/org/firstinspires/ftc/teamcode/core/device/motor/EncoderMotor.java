@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.core.device.trait.Encoder;
 import org.firstinspires.ftc.teamcode.core.util.Smoother;
-import org.firstinspires.ftc.teamcode.core.util.pid.PIDRegulator;
 
 
 public class EncoderMotor extends Motor implements Encoder {

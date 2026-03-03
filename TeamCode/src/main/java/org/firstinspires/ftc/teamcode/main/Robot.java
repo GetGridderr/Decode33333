@@ -4,13 +4,9 @@ package org.firstinspires.ftc.teamcode.main;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
-import org.firstinspires.ftc.teamcode.main.modules.GunControl;
+import org.firstinspires.ftc.teamcode.main.modules.gun.GunControl;
 import org.firstinspires.ftc.teamcode.main.movement.Vehicles;
 
-
-/*
- * Main-wide Robot singleton object
- */
 public final class Robot implements Initializable {
     private static final Robot INSTANCE = new Robot();
 

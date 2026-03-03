@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.core.device.single;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
@@ -92,13 +94,13 @@ public class Gyro implements Initializable {
         imu.resetYaw();
     }
 
-    public static double normalizeAngle(double angle) {
+    public double normalizeAngle(double angle) {
         while (angle > 180) angle -= 360;
         while (angle < -180) angle += 360;
         return angle;
     }
 
-    public static double getShortestPathToAngle(double currentAngle, double targetAngle) {
+    public double getShortestPathToAngle(double currentAngle, double targetAngle) {
         double difference = targetAngle - currentAngle;
         return normalizeAngle(difference);
     }

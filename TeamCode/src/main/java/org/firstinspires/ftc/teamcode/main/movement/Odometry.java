@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.main.movement;
+
 import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
 
 
@@ -9,19 +12,17 @@ import org.firstinspires.ftc.teamcode.core.device.single.Gyro;
 @Config
 public final class Odometry {
     private static final Odometry instance = new Odometry();
-
-    private final Gyro gyro = Gyro.getInstance();
     public double ticksX, ticksY, yaw;
     private double oldXOd, oldYOd;
-    public static double ticksPerCm = 514;
+    public static double ticksPerCm = 1;
     private boolean started = false;
     private double yawOffset = 0;
     private double dX = 0;
     private double dY = 0;
 
     // Сколько лишних тиков набегает при полном обороте робота на месте
-    public static double ticksPerRotX = -54234.72927210026;
-    public static double ticksPerRotY = -38918.859674602405;
+//    public static double ticksPerRotX = 0;
+//    public static double ticksPerRotY = 0;
 
 
     public static Odometry getInstance() {
@@ -35,7 +36,7 @@ public final class Odometry {
     @NonNull
     public static double[] rotateVector(double x, double y, double rot) {
         double cos = Math.cos(rot*Gyro.DEG_TO_RAD), sin = Math.sin(rot*Gyro.DEG_TO_RAD);
-        return new double[]{cos * x + sin * y, cos * y - sin * x};
+        return new double[]{cos * x - sin * y, cos * y + sin * x};
     }
 
     public void setPosition(double x, double y) {
@@ -45,7 +46,7 @@ public final class Odometry {
     }
 
     public void setPositionCm(double x, double y) {
-        setPosition(x * ticksPerCm, y * ticksPerCm);
+        setPosition(x, y);
     }
 
     public void setYaw(double yaw) {
@@ -55,37 +56,37 @@ public final class Odometry {
 
     public void odometryTick() {
         if(!started) {
-            yaw = gyro.getYaw();
+            yaw = Vehicles.getInstance().getGyroYaw();
             oldXOd = Vehicles.getInstance().getPositionOdometerX();
             oldYOd = Vehicles.getInstance().getPositionOdometerY();
             started = true;
             return;
         }
-        double newTicksX = Vehicles.getInstance().getPositionOdometerX();
-        double newTicksY = Vehicles.getInstance().getPositionOdometerY();
-        double newYaw = gyro.getYaw();
+        double newPosX = Vehicles.getInstance().getPositionOdometerX();
+        double newPosY = Vehicles.getInstance().getPositionOdometerY();
+        double newYaw = Vehicles.getInstance().getGyroYaw();
 
-        dX = newTicksX - oldXOd;
-        dY = newTicksY - oldYOd;
+        dX = newPosX - oldXOd;
+        dY = newPosY - oldYOd;
         double dYaw = newYaw - yaw;
-        dX -= ticksPerRotX * dYaw / 360;
-        dY -= ticksPerRotY * dYaw / 360;
+        dX -= dYaw / 360;
+        dY -= dYaw / 360;
         double[] deltaPos = rotateVector(dX, dY, newYaw + yawOffset);
 
         ticksX += deltaPos[0];
         ticksY += deltaPos[1];
         yaw = newYaw;
 
-        oldXOd = newTicksX;
-        oldYOd = newTicksY;
+        oldXOd = newPosX;
+        oldYOd = newPosY;
     }
 
     public double getX() {
-        return ticksX / ticksPerCm;
+        return ticksX;
     }
 
     public double getY() {
-        return ticksY / ticksPerCm;
+        return ticksY;
     }
 
     public double getXSpeed() {
@@ -97,11 +98,11 @@ public final class Odometry {
     }
 
     public double getXSpeedCm() {
-        return dX / ticksPerCm;
+        return dX;
     }
 
     public double getYSpeedCm() {
-        return dY / ticksPerCm;
+        return dY;
     }
 
     public double getYaw() {

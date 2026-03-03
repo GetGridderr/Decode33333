@@ -4,31 +4,30 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Core;
-import org.opencv.core.Scalar;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import java.util.ArrayList;
-import java.util.List;
-import org.opencv.core.*;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
-import org.firstinspires.ftc.teamcode.core.device.trait.Initializable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // coding by Matvey Ivanovv
 
 @Config
 public class Vision implements Initializable {
-    private static final org.firstinspires.ftc.teamcode.main.opencv.Vision INSTANCE = new org.firstinspires.ftc.teamcode.main.opencv.Vision();
+    private static final Vision INSTANCE = new Vision();
 
     OpenCvCamera camera;
     private AprilTagProcessor aprilTag;
@@ -38,7 +37,7 @@ public class Vision implements Initializable {
     public Telemetry telemetry;
     private boolean isInitialized = false;
 
-    public static org.firstinspires.ftc.teamcode.main.opencv.Vision getInstance() { return INSTANCE; }
+    public static Vision getInstance() { return INSTANCE; }
 
     @Override
     public void initialize(HardwareMap hardwareMap) {
@@ -57,7 +56,7 @@ public class Vision implements Initializable {
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+                camera.startStreaming(640, 360, OpenCvCameraRotation.SIDEWAYS_RIGHT);
             }
 
             @Override
@@ -117,7 +116,7 @@ class PipeLine extends OpenCvPipeline {
         MatOfPoint largestPurpleContour = findLargestContour(maskPurple);
         double purpleArea = (largestPurpleContour != null) ? Imgproc.contourArea(largestPurpleContour) : 0;
         largestObjectType = "Purple";
-        processLargestObject(input, largestPurpleContour, new Scalar(255, 0, 255));
+//        processLargestObject(input, largestPurpleContour, new Scalar(255, 0, 255));
         hsvMat.release();
         FtcDashboard.getInstance().getTelemetry().addData("Purple Large X", largestObjectCenterX);
         FtcDashboard.getInstance().getTelemetry().addData("Purple Large Y", largestObjectCenterY);
@@ -141,12 +140,12 @@ class PipeLine extends OpenCvPipeline {
         }
         return largestContour;
     }
-    private void processLargestObject(Mat input, MatOfPoint contour, Scalar color) {
-        Imgproc.drawContours(input, java.util.Arrays.asList(contour), -1, color, 3);
-        Rect boundingBox = Imgproc.boundingRect(contour);
-        largestObjectCenterX = boundingBox.x + boundingBox.width / 2.0;
-        largestObjectCenterY = boundingBox.y + boundingBox.height / 2.0;
-    }
+//    private void processLargestObject(Mat input, MatOfPoint contour, Scalar color) {
+//        Imgproc.drawContours(input, java.util.Arrays.asList(contour), -1, color, 3);
+//        Rect boundingBox = Imgproc.boundingRect(contour);
+//        largestObjectCenterX = boundingBox.x + boundingBox.width / 2.0;
+//        largestObjectCenterY = boundingBox.y + boundingBox.height / 2.0;
+//    }
 
     @Override
     public void onViewportTapped()

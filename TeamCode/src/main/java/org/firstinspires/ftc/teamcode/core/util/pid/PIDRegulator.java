@@ -1,25 +1,29 @@
 package org.firstinspires.ftc.teamcode.core.util.pid;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-
 public class PIDRegulator {
     private double KP = 0;
     private double KD = 0;
     private double KI = 0;
     public double setpoint = 0;
-    private double iniegral_err = 0;
+    public double input = 0;
+    private double integral_err = 0;
     private double old_err = 0;
-    private double old_time = 0;
 
-    public PIDRegulator() {
-
+    public PIDRegulator(PIDCoefficients pidCoefficients) {
+        this.KP = pidCoefficients.getKP();
+        this.KI = pidCoefficients.getKI();
+        this.KD = pidCoefficients.getKD();
     }
 
     public PIDRegulator(double KP, double KI, double KD) {
-        setCoefficients(KP, KI, KD);
+        this.KP = KP;
+        this.KI = KI;
+        this.KD = KD;
     }
     public PIDRegulator(double KP, double KI, double KD, double setpoint) {
-        setCoefficients(KP, KI, KD);
+        this.KP = KP;
+        this.KI = KI;
+        this.KD = KD;
         this.setpoint = setpoint;
     }
 
@@ -29,28 +33,37 @@ public class PIDRegulator {
         this.KD = KD;
     }
 
-    public double PIDGet(double input, double setpoint){
-        this.setpoint = setpoint;
-        return PIDGet(input);
+    public void setSetpoint(double setpoint) { this.setpoint = setpoint; }
+
+    public void setCoefficients(PIDCoefficients pidCoefficients) {
+        this.KP = pidCoefficients.getKP();
+        this.KI = pidCoefficients.getKI();
+        this.KD = pidCoefficients.getKD();
     }
-    public double PIDGet(double input){
-        double time = System.nanoTime() / 1_000_000_000.0;
-        double dt = time - old_time;
-        double err = this.setpoint - input;
-        double d = (err - old_err) / dt;
-        double i = this.iniegral_err;
 
-        if(dt > 0.1) {
-            this.iniegral_err = 0;
-            d = 0;
-            i = 0;
-        }
-
+    public double PIDGet(double input, double setpoint) {
+        double err = setpoint - input;
+        this.input = input;
+        double d = err - this.old_err;
+        double i = this.integral_err;
+        double integralLimit = 1000;
+        this.integral_err += err;
+        this.integral_err = Math.max(-integralLimit, Math.min(integralLimit, this.integral_err));
         this.old_err = err;
-        this.iniegral_err += err * dt;
-        this.old_time = time;
-
-        return err * KP + d * KD * KP + i * KI * KP;
+        this.integral_err += err;
+        return err * this.KP + d * this.KD + i * this.KI;
+    }
+    public double PIDGet(double input) {
+        double err = this.setpoint - input;
+        this.input = input;
+        double d = err - this.old_err;
+        double i = this.integral_err;
+        double integralLimit = 1000;
+        this.integral_err += err;
+        this.integral_err = Math.max(-integralLimit, Math.min(integralLimit, this.integral_err));
+        this.old_err = err;
+        this.integral_err += err;
+        return err * this.KP + d * this.KD + i * this.KI;
     }
 
     public double getOldErr() {
